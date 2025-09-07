@@ -1,0 +1,259 @@
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:attendancesystem/screens/admin/admin_main_page.dart';
+import 'package:attendancesystem/screens/admin/lesson.dart';
+import 'package:attendancesystem/screens/admin/student.dart';
+import 'package:attendancesystem/screens/admin/group.dart';
+import 'package:attendancesystem/screens/signout.dart';
+import 'package:attendancesystem/screens/admin/attendance_report.dart';
+import 'package:attendancesystem/screens/admin/location.dart';
+
+class TeachersPage extends StatefulWidget {
+  const TeachersPage({super.key});
+
+  @override
+  State<TeachersPage> createState() => _TeachersPageState();
+}
+
+class _TeachersPageState extends State<TeachersPage> {
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+
+  List<Map<String, dynamic>> _teachers = [];
+  List<Map<String, dynamic>> _subjects = [];
+  int? _selectedSubjectId;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTeachers();
+    _loadSubjects();
+  }
+
+  Future<void> _loadTeachers() async {
+    final response = await http.get(Uri.parse('http://10.0.2.2/attendance_api/teacher_api.php'));
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      setState(() {
+        _teachers = List<Map<String, dynamic>>.from(data.map((t) => {
+              'teacher_id': int.tryParse(t['teacher_id'].toString()) ?? 0,
+              'firstName': t['first_name'],
+              'lastName': t['last_name'],
+              'email': t['email'],
+              'phone': t['phone'],
+              'subject_name': t['subject_name'] ?? 'None',
+            }));
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Failed to load teachers")),
+      );
+    }
+  }
+
+  Future<void> _loadSubjects() async {
+    final response = await http.get(Uri.parse('http://10.0.2.2/attendance_api/subjects_api.php'));
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      setState(() {
+        _subjects = List<Map<String, dynamic>>.from(data.map((subject) => {
+              'subject_id': int.parse(subject['subject_id'].toString()),
+              'name': subject['name'],
+            }));
+        if (_subjects.isNotEmpty) {
+          _selectedSubjectId = _subjects[0]['subject_id'];
+        }
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Failed to load subjects")),
+      );
+    }
+  }
+
+  Future<void> _addTeacher() async {
+    if (_firstNameController.text.isEmpty ||
+        _lastNameController.text.isEmpty ||
+        _emailController.text.isEmpty ||
+        _phoneController.text.isEmpty ||
+        _selectedSubjectId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill all fields')),
+      );
+      return;
+    }
+
+    final response = await http.post(
+      Uri.parse('http://10.0.2.2/attendance_api/teacher_api.php'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'firstName': _firstNameController.text.trim(),
+        'lastName': _lastNameController.text.trim(),
+        'email': _emailController.text.trim(),
+        'phone': _phoneController.text.trim(),
+        'subjectId': _selectedSubjectId,
+      }),
+    );
+
+    final result = jsonDecode(response.body);
+    if (result['success']) {
+      _firstNameController.clear();
+      _lastNameController.clear();
+      _emailController.clear();
+      _phoneController.clear();
+      setState(() {
+        _selectedSubjectId = _subjects.isNotEmpty ? _subjects[0]['subject_id'] : null;
+      });
+      await _loadTeachers();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Teacher added successfully')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result['message'] ?? 'Add failed')),
+      );
+    }
+  }
+
+  Future<void> _deleteTeacher(int teacherId) async {
+    final response = await http.delete(
+      Uri.parse('http://10.0.2.2/attendance_api/teacher_api.php'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'teacher_id': teacherId}),
+    );
+
+    final result = jsonDecode(response.body);
+    if (result['success']) {
+      await _loadTeachers();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result['message'] ?? 'Delete failed')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Manage Teachers'),
+        backgroundColor: Colors.blueAccent,
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const DrawerHeader(
+              decoration: BoxDecoration(color: Colors.blueAccent),
+              child: Text('Admin Panel', style: TextStyle(color: Colors.white, fontSize: 20)),
+            ),
+         _buildDrawerItem(context, Icons.dashboard, 'Dashboard', const AdminMainPage()),
+            _buildDrawerItem(context, Icons.class_, 'Lessons', const LessonsPage()),
+            _buildDrawerItem(context, Icons.group, 'Groups', const GroupsPage()),
+            _buildDrawerItem(context, Icons.people, 'Teachers', const TeachersPage()),
+            _buildDrawerItem(context, Icons.school, 'Students', const StudentsPage()),
+            _buildDrawerItem(context, Icons.location_on, 'Locations', const LocationsPage()),
+            _buildDrawerItem(context, Icons.assignment, 'Attendance Report', const AttendanceReportPage()),
+            _buildDrawerItem(context, Icons.logout, 'Sign out', const SignOutPage()),
+          ],
+        ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Add a Teacher', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _firstNameController,
+              decoration: const InputDecoration(labelText: 'First Name', border: OutlineInputBorder()),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _lastNameController,
+              decoration: const InputDecoration(labelText: 'Last Name', border: OutlineInputBorder()),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _emailController,
+              decoration: const InputDecoration(labelText: 'Email', border: OutlineInputBorder()),
+              keyboardType: TextInputType.emailAddress,
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _phoneController,
+              decoration: const InputDecoration(labelText: 'Phone Number', border: OutlineInputBorder()),
+              keyboardType: TextInputType.phone,
+            ),
+            const SizedBox(height: 10),
+            DropdownButtonFormField<int>(
+              value: _selectedSubjectId,
+              decoration: const InputDecoration(labelText: 'Subject', border: OutlineInputBorder()),
+              items: _subjects.map((subject) {
+                return DropdownMenuItem<int>(
+                  value: subject['subject_id'],
+                  child: Text(subject['name']),
+                );
+              }).toList(),
+              onChanged: (val) {
+                setState(() {
+                  _selectedSubjectId = val;
+                });
+              },
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: _addTeacher,
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.blueAccent),
+              child: const Text('Add Teacher'),
+            ),
+            const SizedBox(height: 20),
+            const Text('List of Teachers', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
+            Expanded(
+              child: _teachers.isEmpty
+                  ? const Center(child: Text('No teachers available.'))
+                  : ListView.builder(
+                      itemCount: _teachers.length,
+                      itemBuilder: (context, index) {
+                        final teacher = _teachers[index];
+                        return Card(
+                          elevation: 3,
+                          child: ListTile(
+                            title: Text('${teacher['firstName']} ${teacher['lastName']}'),
+                            subtitle: Text(
+                              'Email: ${teacher['email']}\nPhone: ${teacher['phone']}\nSubject: ${teacher['subject_name']}',
+                            ),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              onPressed: () => _deleteTeacher(teacher['teacher_id']),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDrawerItem(BuildContext context, IconData icon, String title, Widget? page) {
+    return ListTile(
+      leading: Icon(icon, color: Colors.blueAccent),
+      title: Text(title),
+      onTap: () {
+        if (page != null) {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => page));
+        }
+      },
+    );
+  }
+}
