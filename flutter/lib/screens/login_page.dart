@@ -83,9 +83,17 @@ class LoginPageState extends State<LoginPage> {
         await prefs.setString('user_type', userType!);
 
         if (userType == 'Admin') {
+          final token = data['token'];
+          if (token is String && token.isNotEmpty) {
+            await prefs.setString('admin_token', token);
+          }
+          await prefs.remove('token');
+          await prefs.remove('group_id');
+
           if (!mounted) return;
           Navigator.pushNamed(context, '/admin');
         } else {
+          await prefs.remove('admin_token');
           await prefs.setString('token', data['token']);
           await prefs.setInt('group_id', data['group_id']);
 

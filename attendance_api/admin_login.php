@@ -1,5 +1,8 @@
 <?php
+require 'vendor/autoload.php';
 require 'db.php'; // ✅ shared PDO connection
+
+use Firebase\JWT\JWT;
 
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json");
@@ -18,10 +21,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($admin) {
             $storedPassword = $admin['password'] ?? '';
             $passwordInfo = password_get_info($storedPassword);
+            $secret_key = getenv('JWT_SECRET') ?: 'your_super_secret_key';
+
+            $issueToken = function () use ($admin, $secret_key) {
+                $payload = [
+                    "iat" => time(),
+                    "exp" => time() + (60 * 60 * 8),
+                    "data" => [
+                        "admin_id" => (int)$admin['admin_id'],
+                        "username" => $admin['username'],
+                        "role" => "admin",
+                    ],
+                ];
+
+                return JWT::encode($payload, $secret_key, 'HS256');
+            };
 
             if (($passwordInfo['algo'] ?? 0) !== 0) {
                 if (password_verify($password, $storedPassword)) {
-                    echo json_encode(["success" => true, "message" => "Admin login successful"]);
+                    echo json_encode([
+                        "success" => true,
+                        "message" => "Admin login successful",
+                        "token" => $issueToken(),
+                    ]);
                 } else {
                     echo json_encode(["success" => false, "message" => "Incorrect password"]);
                 }
@@ -38,7 +60,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     error_log("admin_login.php password upgrade failed: " . $e->getMessage());
                 }
 
-                echo json_encode(["success" => true, "message" => "Admin login successful"]);
+                echo json_encode([
+                    "success" => true,
+                    "message" => "Admin login successful",
+                    "token" => $issueToken(),
+                ]);
             } else {
                 echo json_encode(["success" => false, "message" => "Incorrect password"]);
             }
