@@ -106,7 +106,7 @@ CREATE TABLE attendance (
 
 -- Seed data
 INSERT INTO admin (username, password) VALUES
-  ('admin', 'admin123');
+  ('admin', '$2y$12$WVIm56H.5m1MnnEfk0CYSO1.MJf5s3Q4egzBsOD9kWtgtwX0Aub6O');
 
 INSERT INTO `groups` (group_name) VALUES
   ('Group A'),

@@ -114,7 +114,7 @@ flutter run --dart-define=API_BASE_URL=http://<host>:8000/attendance_api
 
 From `attendance_db.sql`:
 
-- **Admin**: `admin / admin123` (stored as plain text in DB; change for real usage)
+- **Admin**: `admin / admin123` (stored as a bcrypt hash)
 - **Student**: `alice@example.com / password123` (stored as a bcrypt hash)
 
 ## Backend API
@@ -211,7 +211,7 @@ Behavior summary:
 - **Android emulator vs device networking**: `10.0.2.2` works only on the Android emulator. For a physical device, use your machine’s LAN IP (example: `http://192.168.1.10:8000`) and ensure the device can reach it.
 - **Hard-coded credentials/secrets**:
   - DB credentials and JWT secret can be set in `attendance_api/.env` (see `attendance_api/.env.example`)
-  - Admin passwords are compared as plain text (see `attendance_api/admin_login.php`)
+  - Admin passwords are bcrypt-hashed (legacy plain-text is auto-upgraded on first successful login)
 - **Composer install location**: PHP dependencies are expected at `attendance_api/vendor/`; run `composer install` inside `attendance_api/` (not the repo root).
 - **`export_attendance_pdf.php`**: references `tcpdf/tcpdf.php`, but `attendance_api/tcpdf/` is not present in this repo; the Flutter app exports PDFs client-side instead.
 - **`get_subjects_by_group.php`**: returns a simple JSON list of subject names for a given `group_id` (used by the Flutter admin report filter).

@@ -16,11 +16,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $admin = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($admin) {
-            // If using hashed passwords:
-            // if (password_verify($password, $admin['password'])) { ...
+            $storedPassword = $admin['password'] ?? '';
+            $passwordInfo = password_get_info($storedPassword);
 
-            // If storing plain text passwords (NOT RECOMMENDED):
-            if ($password === $admin['password']) {
+            if (($passwordInfo['algo'] ?? 0) !== 0) {
+                if (password_verify($password, $storedPassword)) {
+                    echo json_encode(["success" => true, "message" => "Admin login successful"]);
+                } else {
+                    echo json_encode(["success" => false, "message" => "Incorrect password"]);
+                }
+                exit();
+            }
+
+            // Legacy plain-text support (auto-migrate to a hash on first successful login).
+            if ($password === $storedPassword) {
+                $newHash = password_hash($password, PASSWORD_DEFAULT);
+                try {
+                    $update = $pdo->prepare("UPDATE admin SET password = ? WHERE admin_id = ?");
+                    $update->execute([$newHash, (int)$admin['admin_id']]);
+                } catch (PDOException $e) {
+                    error_log("admin_login.php password upgrade failed: " . $e->getMessage());
+                }
+
                 echo json_encode(["success" => true, "message" => "Admin login successful"]);
             } else {
                 echo json_encode(["success" => false, "message" => "Incorrect password"]);
