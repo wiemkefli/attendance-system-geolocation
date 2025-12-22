@@ -74,10 +74,14 @@ The API will be available at:
 
 #### Configure DB credentials
 
-Edit `attendance_api/db.php`:
+Create `attendance_api/.env` from `attendance_api/.env.example` and set:
 
-```php
-$pdo = new PDO("mysql:host=localhost;dbname=attendance_db", "root", "123456");
+```bash
+DB_HOST=localhost
+DB_NAME=attendance_db
+DB_USER=root
+DB_PASS=...
+JWT_SECRET=...
 ```
 
 ### 3) Run the Flutter app
@@ -124,7 +128,7 @@ Base URL examples:
 - Student auth uses JWT with `Authorization: Bearer <token>`
 - Admin endpoints in this repo do not use JWT (admin login returns only success/message)
 
-⚠️ The JWT secret is hard-coded as `your_super_secret_key` in multiple files under `attendance_api/`. If you change it, change it everywhere (or refactor into a shared config).
+⚠️ The JWT secret can be configured via `attendance_api/.env` using `JWT_SECRET`. If not set, the API falls back to the legacy default `your_super_secret_key` (dev only).
 
 ### Endpoints (as implemented)
 
@@ -206,8 +210,7 @@ Behavior summary:
 
 - **Android emulator vs device networking**: `10.0.2.2` works only on the Android emulator. For a physical device, use your machine’s LAN IP (example: `http://192.168.1.10:8000`) and ensure the device can reach it.
 - **Hard-coded credentials/secrets**:
-  - DB credentials are in `attendance_api/db.php`
-  - JWT secret is hard-coded as `your_super_secret_key` in multiple API files
+  - DB credentials and JWT secret can be set in `attendance_api/.env` (see `attendance_api/.env.example`)
   - Admin passwords are compared as plain text (see `attendance_api/admin_login.php`)
 - **Composer install location**: PHP dependencies are expected at `attendance_api/vendor/`; run `composer install` inside `attendance_api/` (not the repo root).
 - **`export_attendance_pdf.php`**: references `tcpdf/tcpdf.php`, but `attendance_api/tcpdf/` is not present in this repo; the Flutter app exports PDFs client-side instead.

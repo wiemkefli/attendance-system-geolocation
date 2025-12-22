@@ -9,7 +9,7 @@ header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Content-Type: application/json");
 
-$secret_key = "your_super_secret_key"; // Replace with your actual secret key
+$secret_key = getenv('JWT_SECRET') ?: 'your_super_secret_key';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $input = json_decode(file_get_contents("php://input"), true);

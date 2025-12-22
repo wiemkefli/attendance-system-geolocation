@@ -31,6 +31,9 @@ migrate_working_dir/
 .pub/
 **/build/
 
+# Backend env (do not commit secrets)
+attendance_api/.env
+
 # Symbolication related
 app.*.symbols
 

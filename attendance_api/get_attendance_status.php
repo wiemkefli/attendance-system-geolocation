@@ -9,7 +9,7 @@ header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Content-Type: application/json");
 
-$secret_key = "your_super_secret_key";
+$secret_key = getenv('JWT_SECRET') ?: 'your_super_secret_key';
 
 // Decode JWT
 $headers = getallheaders();
