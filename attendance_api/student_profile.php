@@ -32,7 +32,7 @@ try {
 $sql = "
     SELECT s.first_name, s.last_name, s.email, g.group_name
     FROM students s
-    LEFT JOIN groups g ON s.group_id = g.group_id
+    LEFT JOIN `groups` g ON s.group_id = g.group_id
     WHERE s.student_id = ?
 ";
 

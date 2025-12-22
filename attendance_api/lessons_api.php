@@ -13,11 +13,11 @@ if ($method === 'GET') {
                lessons.group_id, lessons.location_id,
                locations.latitude, locations.longitude, locations.name AS location_name,
                CONCAT(teachers.first_name, ' ', teachers.last_name) AS teacher_name,
-               groups.group_name,
+               `groups`.group_name,
                subjects.name AS class_name
         FROM lessons
         JOIN teachers ON lessons.teacher_id = teachers.teacher_id
-        JOIN groups ON lessons.group_id = groups.group_id
+        JOIN `groups` ON lessons.group_id = `groups`.group_id
         JOIN locations ON lessons.location_id = locations.location_id
         JOIN subjects ON lessons.subject_id = subjects.subject_id
     ";

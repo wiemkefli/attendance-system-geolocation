@@ -12,12 +12,12 @@ switch ($method) {
         $studentsStmt = $pdo->query("
             SELECT s.student_id, s.first_name, s.last_name, s.email, s.group_id, g.group_name 
             FROM students s
-            LEFT JOIN groups g ON s.group_id = g.group_id
+            LEFT JOIN `groups` g ON s.group_id = g.group_id
         ");
         $students = $studentsStmt->fetchAll(PDO::FETCH_ASSOC);
 
         // 🔹 Fetch groups
-        $groupsStmt = $pdo->query("SELECT group_id, group_name FROM groups ORDER BY group_name ASC");
+        $groupsStmt = $pdo->query("SELECT group_id, group_name FROM `groups` ORDER BY group_name ASC");
         $groups = $groupsStmt->fetchAll(PDO::FETCH_ASSOC);
 
         echo json_encode(["students" => $students, "groups" => $groups]);

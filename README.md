@@ -209,9 +209,9 @@ Behavior summary:
   - DB credentials are in `attendance_api/db.php`
   - JWT secret is hard-coded as `your_super_secret_key` in multiple API files
   - Admin passwords are compared as plain text (see `attendance_api/admin_login.php`)
-- **`groups` table name**: if you hit SQL syntax issues, consider quoting it as `` `groups` `` everywhere or renaming the table.
+- **Composer install location**: PHP dependencies are expected at `attendance_api/vendor/`; run `composer install` inside `attendance_api/` (not the repo root).
 - **`export_attendance_pdf.php`**: references `tcpdf/tcpdf.php`, but `attendance_api/tcpdf/` is not present in this repo; the Flutter app exports PDFs client-side instead.
-- **`get_subjects_by_group.php`**: the Flutter admin report page (`lib/screens/admin/attendance_report.dart`) expects this endpoint to return a simple list of subject names, but the current PHP file returns a `{"success": true, "data": ...}` session-style payload.
+- **`get_subjects_by_group.php`**: the Flutter admin report page (`flutter/lib/screens/admin/attendance_report.dart`) expects this endpoint to return a simple list of subject names, but the current PHP file returns a `{"success": true, "data": ...}` session-style payload.
 
 ## Development Notes
 

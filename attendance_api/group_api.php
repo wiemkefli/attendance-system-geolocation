@@ -21,7 +21,7 @@ if ($action === 'students') {
 
 // 🔹 Get all groups
 if ($method === 'GET') {
-    $stmt = $pdo->query("SELECT group_id, group_name FROM groups ORDER BY group_name ASC");
+    $stmt = $pdo->query("SELECT group_id, group_name FROM `groups` ORDER BY group_name ASC");
     $groups = $stmt->fetchAll(PDO::FETCH_ASSOC);
     echo json_encode($groups);
     exit();
@@ -38,7 +38,7 @@ if ($method === 'POST') {
     $groupName = trim($input['group_name'] ?? '');
     if (!empty($groupName)) {
         try {
-            $stmt = $pdo->prepare("INSERT INTO groups (group_name) VALUES (?)");
+            $stmt = $pdo->prepare("INSERT INTO `groups` (group_name) VALUES (?)");
             $stmt->execute([$groupName]);
             echo json_encode(["success" => true, "message" => "Group created", "group_id" => $pdo->lastInsertId()]);
         } catch (PDOException $e) {
@@ -60,7 +60,7 @@ if ($method === 'DELETE') {
 
     $groupId = intval($input['group_id'] ?? 0);
     if ($groupId > 0) {
-        $stmt = $pdo->prepare("DELETE FROM groups WHERE group_id = ?");
+        $stmt = $pdo->prepare("DELETE FROM `groups` WHERE group_id = ?");
         $stmt->execute([$groupId]);
         echo json_encode(["success" => true, "message" => "Group deleted"]);
     } else {
