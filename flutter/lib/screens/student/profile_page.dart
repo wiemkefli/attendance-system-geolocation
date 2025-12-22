@@ -1,8 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
-import 'package:attendancesystem/config/api_config.dart';
+import 'package:attendancesystem/services/api_client.dart';
 
 import 'package:attendancesystem/screens/student/student_main_page.dart';
 import 'package:attendancesystem/screens/student/timetable.dart';
@@ -43,10 +42,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
     final token = prefs.getString('token');
 
     if (token != null) {
-      final response = await http.get(
-        apiUri('student_profile.php'),
-        headers: {'Authorization': 'Bearer $token'},
-      );
+      final response = await ApiClient.get('student_profile.php', token: token);
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -78,13 +74,10 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
 
     setState(() => _isUpdating = true);
 
-    final response = await http.post(
-      apiUri('change_password.php'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({'new_password': newPassword}),
+    final response = await ApiClient.postJson(
+      'change_password.php',
+      token: token,
+      body: {'new_password': newPassword},
     );
 
     final result = json.decode(response.body);

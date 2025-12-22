@@ -1,10 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:attendancesystem/services/background_task.dart' as bg_task;
-import 'package:attendancesystem/config/api_config.dart';
+import 'package:attendancesystem/services/api_client.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -38,28 +37,24 @@ class LoginPageState extends State<LoginPage> {
     }
 
     try {
-      late Uri url;
+      late String endpoint;
       late Map<String, String> body;
 
       if (userType == 'Admin') {
-        url = apiUri('admin_login.php');
+        endpoint = 'admin_login.php';
         body = {
           "username": usernameOrEmail,
           "password": password,
         };
       } else {
-        url = apiUri('student_login.php');
+        endpoint = 'student_login.php';
         body = {
           "email": usernameOrEmail,
           "password": password,
         };
       }
 
-      final response = await http.post(
-        url,
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode(body),
-      );
+      final response = await ApiClient.postJson(endpoint, body: body);
 
       if (response.statusCode != 200) {
         if (!mounted) return;
