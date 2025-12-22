@@ -221,6 +221,15 @@ Behavior summary:
 - Flutter API base URL is centralized in `flutter/lib/config/api_config.dart`.
 - JWT is decoded client-side via `jwt_decoder` for convenience, but the backend is the source of truth.
 
+## Changelog
+
+- `HP-001`: Added `attendance_api/.env.example` + `.env` loading; DB and JWT secret are no longer hardcoded.
+- `HP-002`: Admin passwords are bcrypt-hashed (legacy plain-text is auto-upgraded on first login); seed updated in `attendance_db.sql`.
+- `HP-003`: Admin login now issues a JWT; admin endpoints require the token when `ADMIN_AUTH_REQUIRED=true`.
+- `HP-004` / `HP-005`: Attendance marking is guarded against `present → absent` overwrites and validated against group/date/time rules.
+- `HP-006`: `get_subjects_by_group.php` now returns a simple subject name list for the admin report filter.
+- `MP-001` / `MP-003` / `MP-008`: Added a small Flutter `ApiClient`, disposed controllers, and fixed the default widget test to match the real UI.
+
 ## License
 
 No license file is included in this repository. Add one if you plan to distribute the project.
