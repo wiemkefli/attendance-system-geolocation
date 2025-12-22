@@ -214,7 +214,7 @@ Behavior summary:
   - Admin passwords are compared as plain text (see `attendance_api/admin_login.php`)
 - **Composer install location**: PHP dependencies are expected at `attendance_api/vendor/`; run `composer install` inside `attendance_api/` (not the repo root).
 - **`export_attendance_pdf.php`**: references `tcpdf/tcpdf.php`, but `attendance_api/tcpdf/` is not present in this repo; the Flutter app exports PDFs client-side instead.
-- **`get_subjects_by_group.php`**: the Flutter admin report page (`flutter/lib/screens/admin/attendance_report.dart`) expects this endpoint to return a simple list of subject names, but the current PHP file returns a `{"success": true, "data": ...}` session-style payload.
+- **`get_subjects_by_group.php`**: returns a simple JSON list of subject names for a given `group_id` (used by the Flutter admin report filter).
 
 ## Development Notes
 

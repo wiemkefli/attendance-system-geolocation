@@ -1,88 +1,38 @@
 <?php
-require 'db.php'; // ✅ shared PDO connection
+require 'db.php'; // shared PDO connection
 
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json");
 
-$group_id = $_GET['group_id'] ?? null;
-$start_date = $_GET['start_date'] ?? null;
-$end_date = $_GET['end_date'] ?? null;
-$subject = $_GET['subject'] ?? null;
+$group_id = intval($_GET['group_id'] ?? 0);
 
-if (!$group_id) {
-    echo json_encode(["success" => false, "message" => "Missing group_id"]);
+// Used by the Flutter admin report screen to populate the subject filter dropdown.
+// Return a simple JSON array of subject names for the given group_id.
+if ($group_id <= 0) {
+    http_response_code(400);
+    echo json_encode([]);
     exit();
 }
 
-// 🔹 Get all students in the group
-$students = [];
-$stmt = $pdo->prepare("SELECT student_id, CONCAT(first_name, ' ', last_name) AS name FROM students WHERE group_id = ?");
-$stmt->execute([$group_id]);
-foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
-    $students[$row['student_id']] = $row['name'];
-}
+try {
+    $stmt = $pdo->prepare("
+        SELECT DISTINCT s.name
+        FROM lessons l
+        JOIN subjects s ON l.subject_id = s.subject_id
+        WHERE l.group_id = ?
+        ORDER BY s.name ASC
+    ");
+    $stmt->execute([$group_id]);
 
-// 🔹 Build lesson query
-$lesson_sql = "SELECT * FROM lessons WHERE group_id = ?";
-$params = [$group_id];
-
-if ($subject) {
-    $lesson_sql .= " AND subject_id = (SELECT subject_id FROM subjects WHERE name = ?)";
-    $params[] = $subject;
-}
-
-$lesson_stmt = $pdo->prepare($lesson_sql);
-$lesson_stmt->execute($params);
-$lessons = $lesson_stmt->fetchAll(PDO::FETCH_ASSOC);
-
-$sessions = [];
-
-foreach ($lessons as $lesson) {
-    $lesson_id = $lesson['lesson_id'];
-    $dayOfWeek = $lesson['day_of_week'];
-    $start = new DateTime($lesson['start_date']);
-    $end = new DateTime($lesson['end_date']);
-
-    if ($start_date) $start = max($start, new DateTime($start_date));
-    if ($end_date) $end = min($end, new DateTime($end_date));
-
-    $interval = new DateInterval('P1D');
-    $period = new DatePeriod($start, $interval, $end->modify('+1 day'));
-
-    foreach ($period as $date) {
-        if ($date->format('l') !== $dayOfWeek) continue;
-
-        $attendance_date = $date->format('Y-m-d');
-
-        // 🔹 Get attendance for this lesson/date
-        $att_stmt = $pdo->prepare("SELECT student_id, status FROM attendance WHERE lesson_id = ? AND attendance_date = ?");
-        $att_stmt->execute([$lesson_id, $attendance_date]);
-        $attendance = [];
-        foreach ($att_stmt->fetchAll(PDO::FETCH_ASSOC) as $a) {
-            $attendance[$a['student_id']] = $a['status'];
-        }
-
-        // 🔹 Get subject name
-        $subj_stmt = $pdo->prepare("SELECT name FROM subjects WHERE subject_id = ?");
-        $subj_stmt->execute([$lesson['subject_id']]);
-        $subj = $subj_stmt->fetchColumn() ?: 'N/A';
-
-        $session_data = [
-            'date' => $attendance_date,
-            'subject' => $subj,
-            'session' => []
-        ];
-
-        foreach ($students as $id => $name) {
-            $session_data['session'][] = [
-                'student' => $name,
-                'status' => $attendance[$id] ?? 'Not Marked'
-            ];
-        }
-
-        $sessions[] = $session_data;
+    $subjects = [];
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $subjects[] = $row['name'];
     }
-}
 
-echo json_encode(["success" => true, "data" => $sessions]);
+    echo json_encode($subjects);
+} catch (PDOException $e) {
+    error_log("get_subjects_by_group.php DB error: " . $e->getMessage());
+    http_response_code(500);
+    echo json_encode([]);
+}
 ?>
