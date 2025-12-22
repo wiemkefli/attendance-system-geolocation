@@ -27,6 +27,12 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
   bool _isUpdating = false;
 
   @override
+  void dispose() {
+    _newPasswordController.dispose();
+    super.dispose();
+  }
+
+  @override
   void initState() {
     super.initState();
     _loadStudentInfo();

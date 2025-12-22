@@ -23,6 +23,12 @@ class _GroupsPageState extends State<GroupsPage> {
   final Map<int, List<Map<String, dynamic>>> _groupStudents = {};
 
   @override
+  void dispose() {
+    _groupNameController.dispose();
+    super.dispose();
+  }
+
+  @override
   void initState() {
     super.initState();
     _loadGroups();

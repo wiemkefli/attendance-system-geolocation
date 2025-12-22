@@ -28,6 +28,15 @@ class _TeachersPageState extends State<TeachersPage> {
   int? _selectedSubjectId;
 
   @override
+  void dispose() {
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    super.dispose();
+  }
+
+  @override
   void initState() {
     super.initState();
     _loadTeachers();

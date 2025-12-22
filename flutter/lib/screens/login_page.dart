@@ -19,6 +19,13 @@ class LoginPageState extends State<LoginPage> {
   final passwordController = TextEditingController();
   bool _obscurePassword = true;
 
+  @override
+  void dispose() {
+    usernameController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
   Future<void> _login() async {
     final usernameOrEmail = usernameController.text.trim();
     final password = passwordController.text.trim();

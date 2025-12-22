@@ -28,6 +28,14 @@ class _StudentsPageState extends State<StudentsPage> {
   int? _selectedGroupId;
 
   @override
+  void dispose() {
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _emailController.dispose();
+    super.dispose();
+  }
+
+  @override
   void initState() {
     super.initState();
     _loadInitialData();

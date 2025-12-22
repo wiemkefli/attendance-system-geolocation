@@ -26,6 +26,14 @@ class _LocationsPageState extends State<LocationsPage> {
   List<Map<String, dynamic>> _locations = [];
 
   @override
+  void dispose() {
+    _nameController.dispose();
+    _latitudeController.dispose();
+    _longitudeController.dispose();
+    super.dispose();
+  }
+
+  @override
   void initState() {
     super.initState();
     _loadLocations();
