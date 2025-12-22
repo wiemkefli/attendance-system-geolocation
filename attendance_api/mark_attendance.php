@@ -38,6 +38,15 @@ $status = $data["status"];
 $student_lat = isset($data["latitude"]) ? floatval($data["latitude"]) : null;
 $student_lon = isset($data["longitude"]) ? floatval($data["longitude"]) : null;
 
+// Prevent data loss: never allow a previously-marked "present" to be overwritten to "absent".
+$existing_stmt = $pdo->prepare("SELECT status FROM attendance WHERE student_id = ? AND lesson_id = ? AND attendance_date = ?");
+$existing_stmt->execute([$student_id, $lesson_id, $attendance_date]);
+$existing_status = $existing_stmt->fetchColumn();
+if ($existing_status === 'present' && $status !== 'present') {
+    echo json_encode(["success" => true, "message" => "Attendance already marked present"]);
+    exit();
+}
+
 // Get lesson location
 $loc_sql = "
     SELECT locations.latitude, locations.longitude

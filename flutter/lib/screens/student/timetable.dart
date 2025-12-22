@@ -215,6 +215,9 @@ class _TimetablePageState extends State<TimetablePage> {
       final lessonId = int.tryParse(lesson['lesson_id'].toString());
       if (lessonId == null) continue;
 
+      final existingStatus = lesson['attendance_status'];
+      if (existingStatus != null) continue;
+
       final cacheKey = 'absent_${lessonId}_${DateFormat('yyyy-MM-dd').format(selected)}';
       if (prefs.getBool(cacheKey) == true) continue;
 
