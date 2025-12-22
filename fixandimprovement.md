@@ -206,6 +206,17 @@
 - **Verification steps (how to confirm):**
   - Large group/date range query returns faster (compare before/after timings).
 
+### MP-008
+- **Problem (what/where):** Default Flutter test `flutter/test/widget_test.dart` does not match the actual app (no counter UI), so `flutter test` fails.
+- **Why it matters:** Breaks CI and makes it hard to add confidence-building tests.
+- **Proposed fix (exact approach):**
+  - Replace with a widget test that asserts the Login UI renders and basic interactions work (e.g., shows “Login” and user type dropdown).
+  - Add small unit tests for new shared utilities as they are introduced.
+- **Files involved (list):** `flutter/test/widget_test.dart`
+- **Risk level:** Low
+- **Verification steps (how to confirm):**
+  - Run `flutter test` and confirm it passes.
+
 ---
 
 ## 3. Low Priority (Nice-to-have / Polish)
@@ -280,4 +291,3 @@
 9. **MP-006** Add consolidated timetable endpoint to remove N+1 calls.
 10. **Dependency modernization** Update dependencies safely and re-run checks.
 11. **Tests/CI** Fix widget test, add basic endpoint tests, and add GitHub Actions.
-
