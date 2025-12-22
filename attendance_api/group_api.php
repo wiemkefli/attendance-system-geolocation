@@ -1,7 +1,5 @@
 <?php
 require 'db.php'; // ✅ shared PDO connection
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
 
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
@@ -42,6 +40,7 @@ if ($method === 'POST') {
             $stmt->execute([$groupName]);
             echo json_encode(["success" => true, "message" => "Group created", "group_id" => $pdo->lastInsertId()]);
         } catch (PDOException $e) {
+            error_log("group_api.php POST insert error: " . $e->getMessage());
             echo json_encode(["success" => false, "message" => "Group already exists or DB error"]);
         }
     } else {

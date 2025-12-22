@@ -65,7 +65,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             "teacher_list" => $teacher_list
         ]);
     } catch (PDOException $e) {
-        echo json_encode(["success" => false, "message" => "Database error: " . $e->getMessage()]);
+        error_log("admin_dashboard.php DB error: " . $e->getMessage());
+        echo json_encode(["success" => false, "message" => "Database error"]);
     }
 
     exit();

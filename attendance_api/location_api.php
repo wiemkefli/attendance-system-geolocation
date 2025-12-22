@@ -1,7 +1,5 @@
 <?php
 require 'db.php'; // shared PDO connection
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
 
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
@@ -38,6 +36,7 @@ if ($method === 'POST') {
                 "location_id" => $pdo->lastInsertId()
             ]);
         } catch (PDOException $e) {
+            error_log("location_api.php POST insert error: " . $e->getMessage());
             echo json_encode(["success" => false, "message" => "DB error or duplicate location"]);
         }
     } else {

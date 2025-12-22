@@ -101,6 +101,7 @@ try {
     ]);
     echo json_encode(["success" => true, "message" => "Attendance marked successfully"]);
 } catch (PDOException $e) {
-    echo json_encode(["success" => false, "message" => $e->getMessage()]);
+    error_log("mark_attendance.php DB error: " . $e->getMessage());
+    echo json_encode(["success" => false, "message" => "Failed to mark attendance"]);
 }
 ?>

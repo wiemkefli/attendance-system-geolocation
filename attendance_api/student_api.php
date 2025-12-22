@@ -44,7 +44,8 @@ switch ($method) {
                 $stmt->execute([$firstName, $lastName, $email, $groupId, $hashedPassword]);
                 echo json_encode(["success" => true, "message" => "Student added"]);
             } catch (PDOException $e) {
-                echo json_encode(["success" => false, "message" => "Error adding student: " . $e->getMessage()]);
+                error_log("student_api.php POST insert error: " . $e->getMessage());
+                echo json_encode(["success" => false, "message" => "Error adding student"]);
             }
         } else {
             echo json_encode(["success" => false, "message" => "Missing or invalid fields"]);

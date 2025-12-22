@@ -49,6 +49,7 @@ try {
     $stmt->execute([$hashedPassword, $student_id]);
     echo json_encode(["success" => true, "message" => "Password updated"]);
 } catch (PDOException $e) {
-    echo json_encode(["success" => false, "message" => "Update failed: " . $e->getMessage()]);
+    error_log("change_password.php DB error: " . $e->getMessage());
+    echo json_encode(["success" => false, "message" => "Update failed"]);
 }
 ?>

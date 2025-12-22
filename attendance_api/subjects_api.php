@@ -15,6 +15,7 @@ try {
 
     echo json_encode($subjects);
 } catch (PDOException $e) {
-    echo json_encode(["success" => false, "message" => "Database error: " . $e->getMessage()]);
+    error_log("subjects_api.php DB error: " . $e->getMessage());
+    echo json_encode(["success" => false, "message" => "Database error"]);
 }
 ?>

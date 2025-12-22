@@ -56,7 +56,8 @@ if ($method === 'POST') {
             $stmt->execute([$first, $last, $email, $phone, $subjectId]);
             echo json_encode(["success" => true]);
         } catch (PDOException $e) {
-            echo json_encode(["success" => false, "message" => "Insert failed: " . $e->getMessage()]);
+            error_log("teacher_api.php POST insert error: " . $e->getMessage());
+            echo json_encode(["success" => false, "message" => "Insert failed"]);
         }
     } else {
         echo json_encode(["success" => false, "message" => "Missing data"]);
