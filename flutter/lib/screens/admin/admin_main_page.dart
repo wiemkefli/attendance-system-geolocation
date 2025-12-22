@@ -8,6 +8,7 @@ import 'package:attendancesystem/screens/signout.dart';
 import 'package:attendancesystem/screens/admin/group.dart';
 import 'package:attendancesystem/screens/admin/attendance_report.dart';
 import 'package:attendancesystem/screens/admin/location.dart';
+import 'package:attendancesystem/config/api_config.dart';
 
 class AdminMainPage extends StatefulWidget {
   const AdminMainPage({super.key});
@@ -38,7 +39,7 @@ class _AdminMainPageState extends State<AdminMainPage> {
   }
 
   Future<void> _fetchAdminDashboardData() async {
-    final url = Uri.parse('http://10.0.2.2/attendance_api/admin_dashboard.php');
+    final url = apiUri('admin_dashboard.php');
 
     try {
       final response = await http.post(url);
@@ -51,18 +52,18 @@ class _AdminMainPageState extends State<AdminMainPage> {
             lessons = data['lessons'] ?? 0;
           });
         } else {
-          print("Admin dashboard error: ${data['message']}");
+          debugPrint("Admin dashboard error: ${data['message']}");
         }
       } else {
-        print("HTTP error fetching admin dashboard: ${response.statusCode}");
+        debugPrint("HTTP error fetching admin dashboard: ${response.statusCode}");
       }
     } catch (e) {
-      print("Error fetching admin dashboard: $e");
+      debugPrint("Error fetching admin dashboard: $e");
     }
   }
 
   Future<void> _fetchTeachers() async {
-    final url = Uri.parse('http://10.0.2.2/attendance_api/teacher_api.php?simple=true');
+    final url = apiUri('teacher_api.php', queryParameters: {'simple': 'true'});
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
@@ -73,10 +74,10 @@ class _AdminMainPageState extends State<AdminMainPage> {
           });
         }
       } else {
-        print("HTTP error fetching teachers: ${response.statusCode}");
+        debugPrint("HTTP error fetching teachers: ${response.statusCode}");
       }
     } catch (e) {
-      print("Error fetching teachers: $e");
+      debugPrint("Error fetching teachers: $e");
     }
   }
 

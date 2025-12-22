@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:attendancesystem/config/api_config.dart';
 
 import 'package:attendancesystem/screens/student/student_main_page.dart';
 import 'package:attendancesystem/screens/student/attendance_history.dart';
@@ -44,6 +45,10 @@ class _TimetablePageState extends State<TimetablePage> {
     token = prefs.getString('token');
 
     if (token == null || JwtDecoder.isExpired(token!)) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Invalid or expired session')),
       );
@@ -55,9 +60,11 @@ class _TimetablePageState extends State<TimetablePage> {
     groupId = decoded['data']['group_id'];
 
     if (studentId != null && groupId != null) {
+      if (!mounted) return;
       await _selectDate(context);
     }
 
+    if (!mounted) return;
     setState(() => _isLoading = false);
   }
 
@@ -97,7 +104,7 @@ class _TimetablePageState extends State<TimetablePage> {
 
   Future<void> _fetchLessons() async {
     final response = await http.get(
-      Uri.parse('http://10.0.2.2/attendance_api/lessons_api.php'),
+      apiUri('lessons_api.php'),
       headers: {'Authorization': 'Bearer $token'},
     );
 
@@ -152,8 +159,13 @@ class _TimetablePageState extends State<TimetablePage> {
   Future<String?> _getAttendanceStatus(int lessonId) async {
     final selected = DateFormat('yyyy-MM-dd').format(selectedDate);
     final res = await http.get(
-      Uri.parse(
-        'http://10.0.2.2/attendance_api/get_attendance_status.php?student_id=$studentId&lesson_id=$lessonId&date=$selected',
+      apiUri(
+        'get_attendance_status.php',
+        queryParameters: {
+          'student_id': studentId,
+          'lesson_id': lessonId,
+          'date': selected,
+        },
       ),
       headers: {'Authorization': 'Bearer $token'},
     );
@@ -172,7 +184,7 @@ class _TimetablePageState extends State<TimetablePage> {
     final position = await Geolocator.getCurrentPosition();
 
     final response = await http.post(
-      Uri.parse('http://10.0.2.2/attendance_api/mark_attendance.php'),
+      apiUri('mark_attendance.php'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
@@ -188,6 +200,7 @@ class _TimetablePageState extends State<TimetablePage> {
     );
 
     final result = jsonDecode(response.body);
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result['message'] ?? 'Unknown error')));
     await _fetchLessons();
   }
@@ -211,7 +224,7 @@ class _TimetablePageState extends State<TimetablePage> {
 
       if (selected.isBefore(today) || (selected.isAtSameMomentAs(today) && now.isAfter(lessonEnd))) {
         await http.post(
-          Uri.parse('http://10.0.2.2/attendance_api/mark_attendance.php'),
+          apiUri('mark_attendance.php'),
           headers: {
             'Authorization': 'Bearer $token',
             'Content-Type': 'application/json',

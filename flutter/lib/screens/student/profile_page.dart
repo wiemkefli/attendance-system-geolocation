@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:attendancesystem/config/api_config.dart';
 
 import 'package:attendancesystem/screens/student/student_main_page.dart';
 import 'package:attendancesystem/screens/student/timetable.dart';
@@ -37,12 +38,13 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
 
     if (token != null) {
       final response = await http.get(
-        Uri.parse('http://10.0.2.2/attendance_api/student_profile.php'),
+        apiUri('student_profile.php'),
         headers: {'Authorization': 'Bearer $token'},
       );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        if (!mounted) return;
         setState(() {
           studentProfile = {
             'Name': '${data['first_name']} ${data['last_name']}',
@@ -71,7 +73,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
     setState(() => _isUpdating = true);
 
     final response = await http.post(
-      Uri.parse('http://10.0.2.2/attendance_api/change_password.php'),
+      apiUri('change_password.php'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
@@ -80,6 +82,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
     );
 
     final result = json.decode(response.body);
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(result['message'] ?? 'Error')),
     );

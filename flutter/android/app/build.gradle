@@ -6,7 +6,6 @@ plugins {
 }
 
 
-
 def localProperties = new Properties()
 def localPropertiesFile = rootProject.file("local.properties")
 if (localPropertiesFile.exists()) {
@@ -27,13 +26,13 @@ if (flutterVersionName == null) {
 
 android {
     namespace = "com.example.attendancesystem"
-    compileSdk = 35  // Ensure it's set to 34 for stability
+    compileSdk = 36
     ndkVersion = "27.0.12077973"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17  // Updated from 1.7 to 17
         targetCompatibility = JavaVersion.VERSION_17  // Updated from 1.7 to 17
-        coreLibraryDesugaringEnabled true // ✅ ADD THIS
+        coreLibraryDesugaringEnabled true // Enable Java 8+ APIs on older devices
     }
 
     kotlinOptions {
@@ -43,12 +42,10 @@ android {
     defaultConfig {
         applicationId = "com.example.attendancesystem"
         minSdk = flutter.minSdkVersion
-        targetSdk = 35  // Ensure it's set to 34 for stability
+        targetSdk = 35  // Keeping target below compile SDK is acceptable
         versionCode = flutterVersionCode.toInteger()
         versionName = flutterVersionName
     }
-
-
 
     buildTypes {
         release {
@@ -61,8 +58,6 @@ flutter {
     source = "../.."
 }
 
-
-
 dependencies {
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.3' // ✅ Required for local notifications
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4' // Required for desugaring support used by notifications
 }

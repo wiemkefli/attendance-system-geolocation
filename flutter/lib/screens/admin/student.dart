@@ -9,6 +9,7 @@ import 'package:attendancesystem/screens/admin/group.dart';
 import 'package:attendancesystem/screens/signout.dart';
 import 'package:attendancesystem/screens/admin/attendance_report.dart';
 import 'package:attendancesystem/screens/admin/location.dart';
+import 'package:attendancesystem/config/api_config.dart';
 
 class StudentsPage extends StatefulWidget {
   const StudentsPage({super.key});
@@ -39,7 +40,7 @@ class _StudentsPageState extends State<StudentsPage> {
   }
 
   Future<void> _loadInitialData() async {
-    final response = await http.get(Uri.parse('http://10.0.2.2/attendance_api/student_api.php'));
+    final response = await http.get(apiUri('student_api.php'));
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -57,11 +58,13 @@ class _StudentsPageState extends State<StudentsPage> {
         'name': g['group_name']?.toString() ?? 'Unknown',
       }));
 
+      if (!mounted) return;
       setState(() {
         _students = studentsList;
         _groups = groupsList;
       });
     } else {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Failed to load students and groups')),
       );
@@ -81,7 +84,7 @@ class _StudentsPageState extends State<StudentsPage> {
     if (student.values.any((e) => e == null || e == '')) return;
 
     final response = await http.post(
-      Uri.parse('http://10.0.2.2/attendance_api/student_api.php'),
+      apiUri('student_api.php'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(student),
     );
@@ -94,6 +97,7 @@ class _StudentsPageState extends State<StudentsPage> {
         _emailController.clear();
         _selectedGroupId = null;
         await _loadInitialData();
+        if (!mounted) return;
 
         showDialog(
           context: context,
@@ -114,11 +118,13 @@ class _StudentsPageState extends State<StudentsPage> {
           ),
         );
       } else {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(result['message'] ?? 'Add failed')),
         );
       }
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Invalid response from server')),
       );
@@ -127,7 +133,7 @@ class _StudentsPageState extends State<StudentsPage> {
 
   Future<void> _deleteStudent(int id) async {
     final response = await http.delete(
-      Uri.parse('http://10.0.2.2/attendance_api/student_api.php'),
+      apiUri('student_api.php'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'student_id': id}),
     );
@@ -137,11 +143,13 @@ class _StudentsPageState extends State<StudentsPage> {
       if (result['success']) {
         await _loadInitialData();
       } else {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(result['message'] ?? 'Delete failed')),
         );
       }
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Failed to delete student')),
       );

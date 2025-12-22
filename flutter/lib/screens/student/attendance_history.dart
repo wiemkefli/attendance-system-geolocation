@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:attendancesystem/config/api_config.dart';
 
 import 'package:attendancesystem/screens/student/student_main_page.dart';
 import 'package:attendancesystem/screens/student/timetable.dart';
@@ -35,7 +36,7 @@ class _AttendanceHistoryPageState extends State<AttendanceHistoryPage> {
     if (token == null) return;
 
     final response = await http.get(
-      Uri.parse('http://10.0.2.2/attendance_api/get_attendance_history.php'),
+      apiUri('get_attendance_history.php'),
       headers: {'Authorization': 'Bearer $token'},
     );
 
@@ -167,7 +168,7 @@ class _AttendanceHistoryPageState extends State<AttendanceHistoryPage> {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
                   child: DropdownButtonFormField<String>(
-                    value: _selectedMonth,
+                    initialValue: _selectedMonth,
                     onChanged: (value) {
                       if (value != null) _filterAndGroupByMonth(value);
                     },

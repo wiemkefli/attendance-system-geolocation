@@ -3,16 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
-import 'package:attendancesystem/services/background_task.dart' as bgTask;
+import 'package:attendancesystem/services/background_task.dart' as bg_task;
+import 'package:attendancesystem/config/api_config.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
   @override
-  _LoginPageState createState() => _LoginPageState();
+  LoginPageState createState() => LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class LoginPageState extends State<LoginPage> {
   String? userType;
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
@@ -34,55 +35,75 @@ class _LoginPageState extends State<LoginPage> {
       late Map<String, String> body;
 
       if (userType == 'Admin') {
-        url = Uri.parse("http://10.0.2.2/attendance_api/admin_login.php");
+        url = apiUri('admin_login.php');
         body = {
           "username": usernameOrEmail,
           "password": password,
         };
       } else {
-        url = Uri.parse("http://10.0.2.2/attendance_api/student_login.php");
+        url = apiUri('student_login.php');
         body = {
           "email": usernameOrEmail,
           "password": password,
         };
       }
 
-      var response = await http.post(
+      final response = await http.post(
         url,
         headers: {"Content-Type": "application/json"},
         body: jsonEncode(body),
       );
 
-      final data = jsonDecode(response.body);
+      if (response.statusCode != 200) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Login failed (HTTP ${response.statusCode})')),
+        );
+        debugPrint('Login HTTP ${response.statusCode}: ${response.body}');
+        return;
+      }
+
+      Map<String, dynamic> data;
+      try {
+        data = jsonDecode(response.body) as Map<String, dynamic>;
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Invalid response from server')),
+        );
+        debugPrint('Login parse error: $e\nBody: ${response.body}');
+        return;
+      }
+      if (!mounted) return;
+
       if (data['success'] == true) {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('user_type', userType!);
 
         if (userType == 'Admin') {
+          if (!mounted) return;
           Navigator.pushNamed(context, '/admin');
         } else {
           await prefs.setString('token', data['token']);
           await prefs.setInt('group_id', data['group_id']);
 
-          // ✅ Register background notification task AFTER login
-          await Workmanager().cancelAll(); // Avoid duplicate
-          // 🔁 Schedule fast check
+          await Workmanager().cancelAll();
           await Workmanager().registerOneOffTask(
-          'geo_reminder_task_once',
-           bgTask.taskName,
-           initialDelay: const Duration(seconds: 30),
-           constraints: Constraints(networkType: NetworkType.connected),
-           );
+            'geo_reminder_task_once',
+            bg_task.taskName,
+            initialDelay: const Duration(seconds: 30),
+            constraints: Constraints(networkType: NetworkType.connected),
+          );
 
-// ⏱️ Schedule every 15 minutes after that
           await Workmanager().registerPeriodicTask(
-          'geo_reminder_task_periodic',
-           bgTask.taskName,
-           frequency: const Duration(minutes: 15),
-           initialDelay: const Duration(seconds: 30), // Avoid overlap
-           constraints: Constraints(networkType: NetworkType.connected),
-           );
+            'geo_reminder_task_periodic',
+            bg_task.taskName,
+            frequency: const Duration(minutes: 15),
+            initialDelay: const Duration(seconds: 30),
+            constraints: Constraints(networkType: NetworkType.connected),
+          );
 
+          if (!mounted) return;
           Navigator.pushNamed(context, '/student');
         }
       } else {
@@ -91,11 +112,13 @@ class _LoginPageState extends State<LoginPage> {
         );
       }
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e')),
       );
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -124,7 +147,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 30),
               DropdownButtonFormField<String>(
-                value: userType,
+                initialValue: userType,
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.white,

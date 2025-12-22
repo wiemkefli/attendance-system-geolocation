@@ -1,10 +1,12 @@
 import 'dart:convert';
+import 'dart:developer' as developer;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import '../config/api_config.dart';
 
 const String taskName = "geoBackgroundTask";
 final FlutterLocalNotificationsPlugin localNotifications = FlutterLocalNotificationsPlugin();
@@ -12,7 +14,7 @@ final FlutterLocalNotificationsPlugin localNotifications = FlutterLocalNotificat
 @pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
-    print("[WORKMANAGER] Task started at ${DateTime.now()}");
+    developer.log("[WORKMANAGER] Task started at ${DateTime.now()}");
 
     const AndroidInitializationSettings androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
     const InitializationSettings initSettings = InitializationSettings(android: androidInit);
@@ -22,50 +24,50 @@ void callbackDispatcher() {
     final groupId = prefs.getInt('group_id');
     final token = prefs.getString('token');
 
-    print("[DEBUG] Token: ${token?.substring(0, 10)}...");
-    print("[DEBUG] groupId: $groupId");
+    developer.log("[DEBUG] Token: ${token?.substring(0, 10)}...");
+    developer.log("[DEBUG] groupId: $groupId");
 
     if (token == null || groupId == null) {
-      print("[DEBUG] Missing token or groupId");
+      developer.log("[DEBUG] Missing token or groupId");
       return Future.value(true);
     }
 
     final now = DateTime.now();
     final todayWeekday = DateFormat('EEEE').format(now);
-    print("[DEBUG] Today is: $todayWeekday");
+    developer.log("[DEBUG] Today is: $todayWeekday");
 
     Position position;
     try {
       position = await Geolocator.getCurrentPosition();
-      print("[DEBUG] Current position: ${position.latitude}, ${position.longitude}");
+      developer.log("[DEBUG] Current position: ${position.latitude}, ${position.longitude}");
     } catch (e) {
-      print("[ERROR] Failed to get location: $e");
+      developer.log("[ERROR] Failed to get location: $e");
       return Future.value(true);
     }
 
     final response = await http.get(
-      Uri.parse("http://10.0.2.2/attendance_api/lessons_api.php"),
+      apiUri('lessons_api.php'),
       headers: {'Authorization': 'Bearer $token'},
     );
 
     if (response.statusCode != 200) {
-      print("[ERROR] Failed to fetch lessons: ${response.statusCode}");
+      developer.log("[ERROR] Failed to fetch lessons: ${response.statusCode}");
       return Future.value(true);
     }
 
     final List<dynamic> lessons = jsonDecode(response.body);
-    print("[DEBUG] Lessons fetched: ${lessons.length}");
+    developer.log("[DEBUG] Lessons fetched: ${lessons.length}");
 
     for (var lesson in lessons) {
-      print("👉 Checking lesson: ${lesson['subject']}");
+      developer.log("👉 Checking lesson: ${lesson['subject']}");
 
       if (lesson['group_id'] != groupId) {
-        print("❌ Skipped: group_id mismatch (${lesson['group_id']} != $groupId)");
+        developer.log("❌ Skipped: group_id mismatch (${lesson['group_id']} != $groupId)");
         continue;
       }
 
       if (lesson['day_of_week'] != todayWeekday) {
-        print("❌ Skipped: not scheduled for today (${lesson['day_of_week']} != $todayWeekday)");
+        developer.log("❌ Skipped: not scheduled for today (${lesson['day_of_week']} != $todayWeekday)");
         continue;
       }
 
@@ -77,7 +79,7 @@ void callbackDispatcher() {
       final endDateOnly = DateTime(end.year, end.month, end.day);
 
       if (nowDateOnly.isBefore(startDateOnly) || nowDateOnly.isAfter(endDateOnly)) {
-        print("❌ Skipped: today not in date range (\$startDateOnly → \$endDateOnly)");
+        developer.log("❌ Skipped: today not in date range (\$startDateOnly → \$endDateOnly)");
         continue;
       }
 
@@ -87,7 +89,7 @@ void callbackDispatcher() {
       final minutesUntil = lessonStart.difference(now).inMinutes;
 
       if (minutesUntil < 0 || minutesUntil > 15) {
-  print("❌ Skipped: class not within next 15 minutes ($minutesUntil minutes)");
+  developer.log("❌ Skipped: class not within next 15 minutes ($minutesUntil minutes)");
   continue;
 }
 
@@ -96,10 +98,10 @@ void callbackDispatcher() {
       final double lon = (lesson['longitude'] as num).toDouble();
       final distance = Geolocator.distanceBetween(position.latitude, position.longitude, lat, lon);
 
-      print("⏰ $minutesUntil min to class | 📍 $distance m to location");
+      developer.log("⏰ $minutesUntil min to class | 📍 $distance m to location");
 
       if (distance > 100) {
-        print("🔔 Triggering notification!");
+        developer.log("🔔 Triggering notification!");
         await localNotifications.show(
           DateTime.now().millisecondsSinceEpoch ~/ 1000,
           'Reminder',
@@ -115,11 +117,11 @@ void callbackDispatcher() {
           ),
         );
       } else {
-        print("✅ Student is within range (${distance.toStringAsFixed(1)} m), no notification needed.");
+        developer.log("✅ Student is within range (${distance.toStringAsFixed(1)} m), no notification needed.");
       }
     }
 
-    print("[WORKMANAGER] Task complete ✅");
+    developer.log("[WORKMANAGER] Task complete ✅");
     return Future.value(true);
   });
 }

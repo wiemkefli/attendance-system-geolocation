@@ -8,6 +8,7 @@ import 'package:attendancesystem/screens/admin/student.dart';
 import 'package:attendancesystem/screens/signout.dart';
 import 'package:attendancesystem/screens/admin/attendance_report.dart';
 import 'package:attendancesystem/screens/admin/location.dart';
+import 'package:attendancesystem/config/api_config.dart';
 
 class GroupsPage extends StatefulWidget {
   const GroupsPage({super.key});
@@ -29,12 +30,13 @@ class _GroupsPageState extends State<GroupsPage> {
 
   Future<void> _loadGroups() async {
     final response = await http.get(
-      Uri.parse('http://10.0.2.2/attendance_api/group_api.php?action=GET'),
+      apiUri('group_api.php', queryParameters: {'action': 'GET'}),
     );
 
     try {
       final data = jsonDecode(response.body);
       if (data is List) {
+        if (!mounted) return;
         setState(() {
           _groups = List<Map<String, dynamic>>.from(data.map((g) => {
                 'group_id': int.tryParse(g['group_id'].toString()) ?? 0,
@@ -55,7 +57,7 @@ class _GroupsPageState extends State<GroupsPage> {
     if (name.isEmpty) return;
 
     final response = await http.post(
-      Uri.parse('http://10.0.2.2/attendance_api/group_api.php'),
+      apiUri('group_api.php'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'group_name': name}),
     );
@@ -65,6 +67,7 @@ class _GroupsPageState extends State<GroupsPage> {
       if (result['success'] == true) {
         _groupNameController.clear();
         await _loadGroups();
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Group "$name" added')),
         );
@@ -78,7 +81,7 @@ class _GroupsPageState extends State<GroupsPage> {
 
   Future<void> _deleteGroup(int groupId) async {
     final response = await http.delete(
-      Uri.parse('http://10.0.2.2/attendance_api/group_api.php'),
+      apiUri('group_api.php'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'group_id': groupId}),
     );
@@ -97,12 +100,13 @@ class _GroupsPageState extends State<GroupsPage> {
 
   Future<void> _loadGroupStudents(int groupId) async {
     final response = await http.get(
-      Uri.parse('http://10.0.2.2/attendance_api/group_api.php?action=students&group_id=$groupId'),
+      apiUri('group_api.php', queryParameters: {'action': 'students', 'group_id': groupId}),
     );
 
     try {
       final data = jsonDecode(response.body);
       if (data is List) {
+        if (!mounted) return;
         setState(() {
           _groupStudents[groupId] = List<Map<String, dynamic>>.from(data.map((s) => {
                 'student_id': int.tryParse(s['student_id'].toString()) ?? 0,
@@ -120,6 +124,7 @@ class _GroupsPageState extends State<GroupsPage> {
   }
 
   void _showError(String message) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
 

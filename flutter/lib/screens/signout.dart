@@ -11,6 +11,7 @@ class SignOutPage extends StatelessWidget {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
 
+    if (!context.mounted) return;
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (context) => const LoginPage()),
@@ -22,6 +23,7 @@ class SignOutPage extends StatelessWidget {
     final prefs = await SharedPreferences.getInstance();
     final userType = prefs.getString('user_type');
 
+    if (!context.mounted) return;
     if (userType == 'Admin') {
       Navigator.pushReplacement(
         context,
@@ -38,6 +40,7 @@ class SignOutPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Future.delayed(Duration.zero, () {
+      if (!context.mounted) return;
       showDialog(
         context: context,
         barrierDismissible: false,

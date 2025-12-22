@@ -9,6 +9,7 @@ import 'package:attendancesystem/screens/admin/teacher.dart';
 import 'package:attendancesystem/screens/admin/student.dart';
 import 'package:attendancesystem/screens/admin/attendance_report.dart';
 import 'package:attendancesystem/screens/signout.dart';
+import 'package:attendancesystem/config/api_config.dart';
 
 class LocationsPage extends StatefulWidget {
   const LocationsPage({super.key});
@@ -32,12 +33,13 @@ class _LocationsPageState extends State<LocationsPage> {
 
   Future<void> _loadLocations() async {
     final response = await http.get(
-      Uri.parse('http://10.0.2.2/attendance_api/location_api.php?action=GET'),
+      apiUri('location_api.php', queryParameters: {'action': 'GET'}),
     );
 
     try {
       final data = jsonDecode(response.body);
       if (data is List) {
+        if (!mounted) return;
         setState(() {
           _locations = List<Map<String, dynamic>>.from(data.map((loc) => {
                 'location_id': int.tryParse(loc['location_id'].toString()) ?? 0,
@@ -72,7 +74,7 @@ class _LocationsPageState extends State<LocationsPage> {
     }
 
     final response = await http.post(
-      Uri.parse('http://10.0.2.2/attendance_api/location_api.php'),
+      apiUri('location_api.php'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'name': name,
@@ -88,6 +90,7 @@ class _LocationsPageState extends State<LocationsPage> {
         _latitudeController.clear();
         _longitudeController.clear();
         await _loadLocations();
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Location "$name" added')),
         );
@@ -101,7 +104,7 @@ class _LocationsPageState extends State<LocationsPage> {
 
   Future<void> _deleteLocation(int locationId) async {
     final response = await http.delete(
-      Uri.parse('http://10.0.2.2/attendance_api/location_api.php'),
+      apiUri('location_api.php'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'location_id': locationId}),
     );
@@ -119,6 +122,7 @@ class _LocationsPageState extends State<LocationsPage> {
   }
 
   void _showError(String message) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
 

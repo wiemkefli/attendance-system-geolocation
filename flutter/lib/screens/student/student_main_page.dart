@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:attendancesystem/config/api_config.dart';
 
 import 'package:attendancesystem/screens/student/timetable.dart';
 import 'package:attendancesystem/screens/student/attendance_history.dart';
@@ -39,8 +40,7 @@ class _StudentMainPageState extends State<StudentMainPage> {
     if (token == null) return;
 
     final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-    final url =
-        Uri.parse('http://10.0.2.2/attendance_api/student_dashboard.php');
+    final url = apiUri('student_dashboard.php');
 
     final response = await http.post(
       url,
@@ -61,7 +61,7 @@ class _StudentMainPageState extends State<StudentMainPage> {
             List<Map<String, dynamic>>.from(data['today_classes'] ?? []);
       });
     } else {
-      print('Dashboard fetch failed: ${response.statusCode}');
+      debugPrint('Dashboard fetch failed: ${response.statusCode}');
     }
   }
 

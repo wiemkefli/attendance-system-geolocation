@@ -13,6 +13,7 @@ import 'package:attendancesystem/screens/admin/group.dart';
 import 'package:attendancesystem/screens/signout.dart';
 import 'package:attendancesystem/screens/admin/admin_main_page.dart';
 import 'package:attendancesystem/screens/admin/location.dart';
+import 'package:attendancesystem/config/api_config.dart';
 
 class AttendanceReportPage extends StatefulWidget {
   const AttendanceReportPage({super.key});
@@ -38,7 +39,7 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
   }
 
   Future<void> _fetchGroups() async {
-    final response = await http.get(Uri.parse('http://10.0.2.2/attendance_api/group_api.php'));
+    final response = await http.get(apiUri('group_api.php'));
     if (response.statusCode == 200) {
       setState(() {
         _groups = List<Map<String, dynamic>>.from(jsonDecode(response.body));
@@ -47,7 +48,7 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
   }
 
   Future<void> _fetchSubjectsForGroup(String groupId) async {
-    final uri = Uri.http('10.0.2.2', '/attendance_api/get_subjects_by_group.php', {'group_id': groupId});
+    final uri = apiUri('get_subjects_by_group.php', queryParameters: {'group_id': groupId});
     final response = await http.get(uri);
 
     if (response.statusCode == 200) {
@@ -71,7 +72,7 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
       if (endDate != null) 'end_date': DateFormat('yyyy-MM-dd').format(endDate!),
     };
 
-    final uri = Uri.http('10.0.2.2', '/attendance_api/get_attendance_summary.php', params);
+    final uri = apiUri('get_attendance_summary.php', queryParameters: params);
     final response = await http.get(uri);
 
     if (response.statusCode == 200) {
@@ -103,7 +104,7 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
               children: [
                 pw.Text('Date: $date | Subject: $subject', style:  pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
                 pw.SizedBox(height: 8),
-                pw.Table.fromTextArray(
+                pw.TableHelper.fromTextArray(
                   headers: ['Student', 'Status'],
                   data: students.map((s) => [s['student'], s['status']]).toList(),
                   border: pw.TableBorder.all(),
@@ -234,7 +235,7 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             DropdownButtonFormField<String>(
-              value: selectedGroup,
+              initialValue: selectedGroup,
               items: _groups.map((group) {
                 return DropdownMenuItem(
                   value: group['group_id'].toString(),
@@ -249,7 +250,7 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
             ),
             const SizedBox(height: 10),
             DropdownButtonFormField<String>(
-              value: selectedSubject,
+              initialValue: selectedSubject,
               items: _subjects.map((subject) => DropdownMenuItem(
                 value: subject,
                 child: Text(subject),

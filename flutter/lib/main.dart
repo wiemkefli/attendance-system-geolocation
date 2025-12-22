@@ -3,7 +3,7 @@ import 'package:attendancesystem/screens/login_page.dart';
 import 'package:attendancesystem/screens/admin/admin_main_page.dart';
 import 'package:attendancesystem/screens/student/student_main_page.dart';
 import 'package:workmanager/workmanager.dart';
-import 'package:attendancesystem/services/background_task.dart' as bgTask;
+import 'package:attendancesystem/services/background_task.dart' as bg_task;
 
 import 'package:permission_handler/permission_handler.dart';
 
@@ -13,10 +13,7 @@ void main() async {
   await _ensurePermissions();
 
   // ✅ Initialize Workmanager correctly
-  Workmanager().initialize(
-    bgTask.callbackDispatcher,
-    isInDebugMode: false, // <-- Set to true to see logs while testing
-  );
+  Workmanager().initialize(bg_task.callbackDispatcher);
 
 
   runApp(const MyApp());
@@ -24,11 +21,11 @@ void main() async {
 
 Future<void> _ensurePermissions() async {
   final status = await Permission.notification.request();
-  print("🔔 Notification permission granted: $status");
+  debugPrint("🔔 Notification permission granted: $status");
 
   // Optionally: ask for location permission here too
   final locStatus = await Permission.locationWhenInUse.request();
-  print("📍 Location permission granted: $locStatus");
+  debugPrint("📍 Location permission granted: $locStatus");
 }
 
 class MyApp extends StatelessWidget {

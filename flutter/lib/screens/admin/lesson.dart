@@ -9,6 +9,7 @@ import 'package:attendancesystem/screens/admin/student.dart';
 import 'package:attendancesystem/screens/signout.dart';
 import 'package:attendancesystem/screens/admin/attendance_report.dart';
 import 'package:attendancesystem/screens/admin/location.dart';
+import 'package:attendancesystem/config/api_config.dart';
 
 class LessonsPage extends StatefulWidget {
   const LessonsPage({super.key});
@@ -50,7 +51,7 @@ class _LessonsPageState extends State<LessonsPage> {
   }
 
   Future<void> _fetchSubjects() async {
-    final response = await http.get(Uri.parse('http://10.0.2.2/attendance_api/subjects_api.php'));
+    final response = await http.get(apiUri('subjects_api.php'));
     if (response.statusCode == 200) {
       final raw = jsonDecode(response.body);
       setState(() {
@@ -63,7 +64,7 @@ class _LessonsPageState extends State<LessonsPage> {
   }
 
   Future<void> _fetchTeachers() async {
-    final response = await http.get(Uri.parse('http://10.0.2.2/attendance_api/teacher_api.php?simple=true'));
+    final response = await http.get(apiUri('teacher_api.php', queryParameters: {'simple': 'true'}));
     if (response.statusCode == 200) {
       final raw = jsonDecode(response.body);
       setState(() {
@@ -92,7 +93,7 @@ class _LessonsPageState extends State<LessonsPage> {
   }
 
   Future<void> _fetchGroups() async {
-    final response = await http.get(Uri.parse('http://10.0.2.2/attendance_api/group_api.php'));
+    final response = await http.get(apiUri('group_api.php'));
     if (response.statusCode == 200) {
       final raw = jsonDecode(response.body);
       _groups = List<Map<String, dynamic>>.from(raw.map((g) => {
@@ -104,7 +105,7 @@ class _LessonsPageState extends State<LessonsPage> {
   }
 
   Future<void> _fetchLocations() async {
-    final response = await http.get(Uri.parse('http://10.0.2.2/attendance_api/location_api.php'));
+    final response = await http.get(apiUri('location_api.php'));
     if (response.statusCode == 200) {
       final raw = jsonDecode(response.body);
       _locations = List<Map<String, dynamic>>.from(raw.map((loc) => {
@@ -116,7 +117,7 @@ class _LessonsPageState extends State<LessonsPage> {
   }
 
   Future<void> _fetchLessons() async {
-    final response = await http.get(Uri.parse('http://10.0.2.2/attendance_api/lessons_api.php'));
+    final response = await http.get(apiUri('lessons_api.php'));
     if (response.statusCode == 200) {
       setState(() {
         _lessons = List<Map<String, dynamic>>.from(jsonDecode(response.body));
@@ -144,7 +145,7 @@ class _LessonsPageState extends State<LessonsPage> {
     }
 
     final response = await http.post(
-      Uri.parse('http://10.0.2.2/attendance_api/lessons_api.php'),
+      apiUri('lessons_api.php'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'subject_id': _selectedSubjectId,
@@ -174,7 +175,7 @@ class _LessonsPageState extends State<LessonsPage> {
 
   Future<void> _deleteLesson(int lessonId) async {
     final response = await http.post(
-      Uri.parse('http://10.0.2.2/attendance_api/lessons_api.php'),
+      apiUri('lessons_api.php'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'action': 'delete', 'lesson_id': lessonId}),
     );
@@ -261,7 +262,7 @@ class _LessonsPageState extends State<LessonsPage> {
           // Subject Dropdown
           DropdownButtonFormField<int>(
             decoration: const InputDecoration(labelText: 'Subject', border: OutlineInputBorder()),
-            value: _selectedSubjectId,
+            initialValue: _selectedSubjectId,
             items: _subjects.map<DropdownMenuItem<int>>((s) {
               return DropdownMenuItem<int>(
                 value: s['subject_id'],
@@ -280,7 +281,7 @@ class _LessonsPageState extends State<LessonsPage> {
           // Teacher Dropdown filtered by selected subject
           DropdownButtonFormField<int>(
             decoration: const InputDecoration(labelText: 'Teacher', border: OutlineInputBorder()),
-            value: _selectedTeacherId,
+            initialValue: _selectedTeacherId,
             items: _filteredTeachers.map<DropdownMenuItem<int>>((t) {
               return DropdownMenuItem<int>(
                 value: t['teacher_id'],
@@ -294,7 +295,7 @@ class _LessonsPageState extends State<LessonsPage> {
           // Group Dropdown
           DropdownButtonFormField<int>(
             decoration: const InputDecoration(labelText: 'Group', border: OutlineInputBorder()),
-            value: _selectedGroupId,
+            initialValue: _selectedGroupId,
             items: _groups.map<DropdownMenuItem<int>>((g) {
               return DropdownMenuItem<int>(
                 value: g['group_id'],
@@ -308,7 +309,7 @@ class _LessonsPageState extends State<LessonsPage> {
           // Location Dropdown
           DropdownButtonFormField<int>(
             decoration: const InputDecoration(labelText: 'Location', border: OutlineInputBorder()),
-            value: _selectedLocationId,
+            initialValue: _selectedLocationId,
             items: _locations.map<DropdownMenuItem<int>>((l) {
               return DropdownMenuItem<int>(
                 value: l['location_id'],
@@ -330,7 +331,7 @@ class _LessonsPageState extends State<LessonsPage> {
 
           DropdownButtonFormField<String>(
             decoration: const InputDecoration(labelText: 'Day of Week', border: OutlineInputBorder()),
-            value: _selectedDay,
+            initialValue: _selectedDay,
             items: _daysOfWeek.map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
             onChanged: (val) => setState(() => _selectedDay = val),
           ),
