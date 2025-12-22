@@ -1,6 +1,11 @@
 <?php
 require_once('tcpdf/tcpdf.php');
 require 'db.php'; // ✅ use PDO
+require_once __DIR__ . '/admin_auth.php';
+
+if (isAdminAuthRequired()) {
+    requireAdminAuth();
+}
 
 $group_id = $_GET['group_id'] ?? null;
 $start_date = $_GET['start_date'] ?? null;

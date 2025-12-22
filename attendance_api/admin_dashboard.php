@@ -1,8 +1,13 @@
 <?php
 require 'db.php'; // ✅ shared PDO connection
+require_once __DIR__ . '/admin_auth.php';
 
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json");
+
+if (isAdminAuthRequired()) {
+    requireAdminAuth();
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $date = $_POST['date'] ?? date('Y-m-d');

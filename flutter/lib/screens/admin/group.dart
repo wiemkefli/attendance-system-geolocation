@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:attendancesystem/screens/admin/admin_main_page.dart';
 import 'package:attendancesystem/screens/admin/lesson.dart';
 import 'package:attendancesystem/screens/admin/teacher.dart';
@@ -34,9 +35,17 @@ class _GroupsPageState extends State<GroupsPage> {
     _loadGroups();
   }
 
+  Future<String?> _getAdminToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('admin_token');
+  }
+
   Future<void> _loadGroups() async {
+    final token = await _getAdminToken();
+    if (token == null) return;
     final response = await http.get(
       apiUri('group_api.php', queryParameters: {'action': 'GET'}),
+      headers: {'Authorization': 'Bearer $token'},
     );
 
     try {
@@ -62,9 +71,11 @@ class _GroupsPageState extends State<GroupsPage> {
     final name = _groupNameController.text.trim();
     if (name.isEmpty) return;
 
+    final token = await _getAdminToken();
+    if (token == null) return;
     final response = await http.post(
       apiUri('group_api.php'),
-      headers: {'Content-Type': 'application/json'},
+      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
       body: jsonEncode({'group_name': name}),
     );
 
@@ -86,9 +97,11 @@ class _GroupsPageState extends State<GroupsPage> {
   }
 
   Future<void> _deleteGroup(int groupId) async {
+    final token = await _getAdminToken();
+    if (token == null) return;
     final response = await http.delete(
       apiUri('group_api.php'),
-      headers: {'Content-Type': 'application/json'},
+      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
       body: jsonEncode({'group_id': groupId}),
     );
 
@@ -105,8 +118,11 @@ class _GroupsPageState extends State<GroupsPage> {
   }
 
   Future<void> _loadGroupStudents(int groupId) async {
+    final token = await _getAdminToken();
+    if (token == null) return;
     final response = await http.get(
       apiUri('group_api.php', queryParameters: {'action': 'students', 'group_id': groupId}),
+      headers: {'Authorization': 'Bearer $token'},
     );
 
     try {

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
@@ -38,8 +39,18 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
     _fetchGroups();
   }
 
+  Future<String?> _getAdminToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('admin_token');
+  }
+
   Future<void> _fetchGroups() async {
-    final response = await http.get(apiUri('group_api.php'));
+    final token = await _getAdminToken();
+    if (token == null) return;
+    final response = await http.get(
+      apiUri('group_api.php'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
     if (response.statusCode == 200) {
       setState(() {
         _groups = List<Map<String, dynamic>>.from(jsonDecode(response.body));
@@ -49,7 +60,9 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
 
   Future<void> _fetchSubjectsForGroup(String groupId) async {
     final uri = apiUri('get_subjects_by_group.php', queryParameters: {'group_id': groupId});
-    final response = await http.get(uri);
+    final token = await _getAdminToken();
+    if (token == null) return;
+    final response = await http.get(uri, headers: {'Authorization': 'Bearer $token'});
 
     if (response.statusCode == 200) {
       final List<dynamic> rawSubjects = json.decode(response.body);
@@ -73,7 +86,12 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
     };
 
     final uri = apiUri('get_attendance_summary.php', queryParameters: params);
-    final response = await http.get(uri);
+    final token = await _getAdminToken();
+    if (token == null) {
+      setState(() => _isLoading = false);
+      return;
+    }
+    final response = await http.get(uri, headers: {'Authorization': 'Bearer $token'});
 
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body);

@@ -126,7 +126,7 @@ Base URL examples:
 ### Auth
 
 - Student auth uses JWT with `Authorization: Bearer <token>`
-- Admin endpoints in this repo do not use JWT (admin login returns only success/message)
+- Admin login returns a JWT in `token`; admin endpoints require `Authorization: Bearer <token>` when `ADMIN_AUTH_REQUIRED` is enabled (recommended).
 
 ⚠️ The JWT secret can be configured via `attendance_api/.env` using `JWT_SECRET`. If not set, the API falls back to the legacy default `your_super_secret_key` (dev only).
 

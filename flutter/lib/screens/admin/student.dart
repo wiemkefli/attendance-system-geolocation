@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:attendancesystem/screens/admin/admin_main_page.dart';
 import 'package:attendancesystem/screens/admin/lesson.dart';
@@ -41,6 +42,11 @@ class _StudentsPageState extends State<StudentsPage> {
     _loadInitialData();
   }
 
+  Future<String?> _getAdminToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('admin_token');
+  }
+
   String _generateRandomPassword(int length) {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#\$%&*';
     final rand = DateTime.now().millisecondsSinceEpoch;
@@ -48,7 +54,12 @@ class _StudentsPageState extends State<StudentsPage> {
   }
 
   Future<void> _loadInitialData() async {
-    final response = await http.get(apiUri('student_api.php'));
+    final token = await _getAdminToken();
+    if (token == null) return;
+    final response = await http.get(
+      apiUri('student_api.php'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -91,9 +102,12 @@ class _StudentsPageState extends State<StudentsPage> {
 
     if (student.values.any((e) => e == null || e == '')) return;
 
+    final token = await _getAdminToken();
+    if (token == null) return;
+
     final response = await http.post(
       apiUri('student_api.php'),
-      headers: {'Content-Type': 'application/json'},
+      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
       body: jsonEncode(student),
     );
 
@@ -140,9 +154,11 @@ class _StudentsPageState extends State<StudentsPage> {
   }
 
   Future<void> _deleteStudent(int id) async {
+    final token = await _getAdminToken();
+    if (token == null) return;
     final response = await http.delete(
       apiUri('student_api.php'),
-      headers: {'Content-Type': 'application/json'},
+      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
       body: jsonEncode({'student_id': id}),
     );
 

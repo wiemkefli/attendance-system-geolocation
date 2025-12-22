@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:attendancesystem/screens/admin/group.dart';
 import 'package:attendancesystem/screens/admin/admin_main_page.dart';
 import 'package:attendancesystem/screens/admin/teacher.dart';
@@ -50,8 +51,18 @@ class _LessonsPageState extends State<LessonsPage> {
     _fetchLessons();
   }
 
+  Future<String?> _getAdminToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('admin_token');
+  }
+
   Future<void> _fetchSubjects() async {
-    final response = await http.get(apiUri('subjects_api.php'));
+    final token = await _getAdminToken();
+    if (token == null) return;
+    final response = await http.get(
+      apiUri('subjects_api.php'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
     if (response.statusCode == 200) {
       final raw = jsonDecode(response.body);
       setState(() {
@@ -64,7 +75,12 @@ class _LessonsPageState extends State<LessonsPage> {
   }
 
   Future<void> _fetchTeachers() async {
-    final response = await http.get(apiUri('teacher_api.php', queryParameters: {'simple': 'true'}));
+    final token = await _getAdminToken();
+    if (token == null) return;
+    final response = await http.get(
+      apiUri('teacher_api.php', queryParameters: {'simple': 'true'}),
+      headers: {'Authorization': 'Bearer $token'},
+    );
     if (response.statusCode == 200) {
       final raw = jsonDecode(response.body);
       setState(() {
@@ -93,7 +109,12 @@ class _LessonsPageState extends State<LessonsPage> {
   }
 
   Future<void> _fetchGroups() async {
-    final response = await http.get(apiUri('group_api.php'));
+    final token = await _getAdminToken();
+    if (token == null) return;
+    final response = await http.get(
+      apiUri('group_api.php'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
     if (response.statusCode == 200) {
       final raw = jsonDecode(response.body);
       _groups = List<Map<String, dynamic>>.from(raw.map((g) => {
@@ -105,7 +126,12 @@ class _LessonsPageState extends State<LessonsPage> {
   }
 
   Future<void> _fetchLocations() async {
-    final response = await http.get(apiUri('location_api.php'));
+    final token = await _getAdminToken();
+    if (token == null) return;
+    final response = await http.get(
+      apiUri('location_api.php'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
     if (response.statusCode == 200) {
       final raw = jsonDecode(response.body);
       _locations = List<Map<String, dynamic>>.from(raw.map((loc) => {
@@ -117,7 +143,12 @@ class _LessonsPageState extends State<LessonsPage> {
   }
 
   Future<void> _fetchLessons() async {
-    final response = await http.get(apiUri('lessons_api.php'));
+    final token = await _getAdminToken();
+    if (token == null) return;
+    final response = await http.get(
+      apiUri('lessons_api.php'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
     if (response.statusCode == 200) {
       setState(() {
         _lessons = List<Map<String, dynamic>>.from(jsonDecode(response.body));
@@ -144,9 +175,12 @@ class _LessonsPageState extends State<LessonsPage> {
       return '$hour:$minute:00';
     }
 
+    final token = await _getAdminToken();
+    if (token == null) return;
+
     final response = await http.post(
       apiUri('lessons_api.php'),
-      headers: {'Content-Type': 'application/json'},
+      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
       body: jsonEncode({
         'subject_id': _selectedSubjectId,
         'teacher_id': _selectedTeacherId,
@@ -174,9 +208,12 @@ class _LessonsPageState extends State<LessonsPage> {
   }
 
   Future<void> _deleteLesson(int lessonId) async {
+    final token = await _getAdminToken();
+    if (token == null) return;
+
     final response = await http.post(
       apiUri('lessons_api.php'),
-      headers: {'Content-Type': 'application/json'},
+      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
       body: jsonEncode({'action': 'delete', 'lesson_id': lessonId}),
     );
 

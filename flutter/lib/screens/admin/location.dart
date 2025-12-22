@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:attendancesystem/screens/admin/admin_main_page.dart';
 import 'package:attendancesystem/screens/admin/lesson.dart';
@@ -39,9 +40,17 @@ class _LocationsPageState extends State<LocationsPage> {
     _loadLocations();
   }
 
+  Future<String?> _getAdminToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('admin_token');
+  }
+
   Future<void> _loadLocations() async {
+    final token = await _getAdminToken();
+    if (token == null) return;
     final response = await http.get(
       apiUri('location_api.php', queryParameters: {'action': 'GET'}),
+      headers: {'Authorization': 'Bearer $token'},
     );
 
     try {
@@ -81,9 +90,12 @@ class _LocationsPageState extends State<LocationsPage> {
       return;
     }
 
+    final token = await _getAdminToken();
+    if (token == null) return;
+
     final response = await http.post(
       apiUri('location_api.php'),
-      headers: {'Content-Type': 'application/json'},
+      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
       body: jsonEncode({
         'name': name,
         'latitude': latitude,
@@ -111,9 +123,11 @@ class _LocationsPageState extends State<LocationsPage> {
   }
 
   Future<void> _deleteLocation(int locationId) async {
+    final token = await _getAdminToken();
+    if (token == null) return;
     final response = await http.delete(
       apiUri('location_api.php'),
-      headers: {'Content-Type': 'application/json'},
+      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
       body: jsonEncode({'location_id': locationId}),
     );
 
