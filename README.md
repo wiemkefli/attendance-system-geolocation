@@ -30,7 +30,7 @@ Mobile attendance app with an Admin panel and a Student panel. Students can view
 
 ## Prerequisites
 
-- Flutter SDK (Dart 3.4+)
+- Flutter SDK (Dart 3.10+; tested on Flutter 3.38.x)
 - PHP 8.2+ (works with PHP built-in server)
 - MySQL 8.x (or compatible)
 - Android Emulator or device (for geolocation + notifications)
