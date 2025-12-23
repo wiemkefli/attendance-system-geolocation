@@ -148,6 +148,16 @@ class _AttendanceHistoryPageState extends State<AttendanceHistoryPage> {
         : (monthOptions.isNotEmpty ? monthOptions.first : null);
     final colors = Theme.of(context).colorScheme;
 
+    if (!_isLoading &&
+        monthOptions.isNotEmpty &&
+        _selectedMonth != initialMonth &&
+        initialMonth != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _filterAndGroupByMonth(initialMonth);
+      });
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Attendance History'),
@@ -159,22 +169,30 @@ class _AttendanceHistoryPageState extends State<AttendanceHistoryPage> {
               children: [
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                  child: DropdownButtonFormField<String>(
-                    initialValue: initialMonth,
-                    onChanged: (value) {
-                      if (value != null) _filterAndGroupByMonth(value);
-                    },
+                  child: InputDecorator(
                     decoration: const InputDecoration(
                       labelText: "Filter by Month",
                       border: OutlineInputBorder(),
                     ),
-                    items: monthOptions.map((month) {
-                      final display = DateFormat('MMMM yyyy').format(DateTime.parse('$month-01'));
-                      return DropdownMenuItem<String>(
-                        value: month,
-                        child: Text(display),
-                      );
-                    }).toList(),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        isExpanded: true,
+                        value: initialMonth,
+                        items: monthOptions.map((month) {
+                          final display = DateFormat('MMMM yyyy')
+                              .format(DateTime.parse('$month-01'));
+                          return DropdownMenuItem<String>(
+                            value: month,
+                            child: Text(display),
+                          );
+                        }).toList(),
+                        onChanged: monthOptions.isEmpty
+                            ? null
+                            : (value) {
+                                if (value != null) _filterAndGroupByMonth(value);
+                              },
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 10),
