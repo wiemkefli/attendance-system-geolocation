@@ -31,7 +31,7 @@ Mobile attendance app with an Admin panel and a Student panel. Students can view
 ## Prerequisites
 
 - Flutter SDK (Dart 3.4+)
-- PHP 8+ (works with PHP built-in server)
+- PHP 8.2+ (works with PHP built-in server)
 - MySQL 8.x (or compatible)
 - Android Emulator or device (for geolocation + notifications)
 
@@ -231,6 +231,8 @@ Behavior summary:
 - `MP-010`: Updated `attendance_api/composer.json` metadata so `composer validate` passes cleanly (CI-friendly); lock/vendor metadata refreshed.
 - `LP-001`: Added a global Material 3 theme (`flutter/lib/theme/app_theme.dart`) and removed hardcoded AppBar/button colors for a more cohesive UI (light/dark supported via system).
 - `LP-002`: Replaced remaining garbled/emoji-style UI labels with clear text + icons in the student timetable.
+- `DM-001` / `DM-002`: Updated Flutter dependencies (lockfile) and removed unused `dart_jsonwebtoken`.
+- `DM-003` / `DM-004` / `DM-005`: Targeted PHP 8.2+, upgraded `firebase/php-jwt` to v7, and adopted `vlucas/phpdotenv` (with fallback) for `.env` loading.
 
 ## License
 

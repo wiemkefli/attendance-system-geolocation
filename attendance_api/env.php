@@ -1,13 +1,29 @@
 <?php
 
 /**
- * Minimal `.env` loader to avoid hard-coded secrets without requiring extra dependencies.
- * Loads variables into getenv()/$_ENV if `attendance_api/.env` exists.
+ * `.env` loader:
+ * - Prefer `vlucas/phpdotenv` when installed (handles edge cases better)
+ * - Fallback to a minimal parser to avoid hard-coded secrets
  */
 function loadEnvFile(string $path): void
 {
+    $autoload = __DIR__ . '/vendor/autoload.php';
+    if (is_file($autoload) && is_readable($autoload)) {
+        require_once $autoload;
+    }
+
     if (!is_file($path) || !is_readable($path)) {
         return;
+    }
+
+    if (class_exists(\Dotenv\Dotenv::class)) {
+        try {
+            $dir = dirname($path);
+            $file = basename($path);
+            \Dotenv\Dotenv::createImmutable($dir, $file)->safeLoad();
+        } catch (\Throwable $e) {
+            // Fall back to the minimal parser below.
+        }
     }
 
     $lines = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
@@ -49,4 +65,3 @@ function loadEnvFile(string $path): void
         putenv("$key=$value");
     }
 }
-
