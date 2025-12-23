@@ -79,21 +79,23 @@ class _AttendanceHistoryPageState extends State<AttendanceHistoryPage> {
     };
 
     final filtered = _allHistory.where((record) {
-      final date = record['attendance_date'];
+      final date = record['attendance_date']?.toString();
       return date != null && date.startsWith(yearMonth);
     }).toList();
 
     filtered.sort((a, b) {
-      final dayA = dayOrder[a['day_of_week']] ?? 8;
-      final dayB = dayOrder[b['day_of_week']] ?? 8;
+      final dayA = dayOrder[a['day_of_week']?.toString()] ?? 8;
+      final dayB = dayOrder[b['day_of_week']?.toString()] ?? 8;
       return dayA != dayB
           ? dayA.compareTo(dayB)
-          : (a['start_time'] ?? '').compareTo(b['start_time'] ?? '');
+          : (a['start_time']?.toString() ?? '')
+              .compareTo(b['start_time']?.toString() ?? '');
     });
 
     final grouped = <String, List<Map<String, dynamic>>>{};
     for (var record in filtered) {
-      final key = '${record['day_of_week']}, ${record['attendance_date']}';
+      final key =
+          '${record['day_of_week']?.toString() ?? 'Unknown'}, ${record['attendance_date']?.toString() ?? ''}';
       grouped.putIfAbsent(key, () => []).add(record);
     }
 
@@ -106,10 +108,11 @@ class _AttendanceHistoryPageState extends State<AttendanceHistoryPage> {
   List<String> _generateMonthOptions() {
     final months = <String>{};
     for (var record in _allHistory) {
-      final dateStr = record['attendance_date'];
-      if (dateStr != null) {
-        months.add(dateStr.substring(0, 7));
-      }
+      final dateStr = record['attendance_date']?.toString();
+      if (dateStr == null || dateStr.length < 7) continue;
+      final candidate = dateStr.substring(0, 7);
+      if (!RegExp(r'^\d{4}-\d{2}$').hasMatch(candidate)) continue;
+      months.add(candidate);
     }
 
     final sorted = months.toList()..sort((a, b) => b.compareTo(a));
@@ -117,10 +120,10 @@ class _AttendanceHistoryPageState extends State<AttendanceHistoryPage> {
   }
 
   Widget _buildHistoryCard(Map<String, dynamic> record) {
-    final subject = record['subject'];
-    final status = record['status'];
-    final startTime = record['start_time'];
-    final endTime = record['end_time'];
+    final subject = record['subject']?.toString() ?? 'Unknown Subject';
+    final status = record['status']?.toString();
+    final startTime = record['start_time']?.toString() ?? '';
+    final endTime = record['end_time']?.toString() ?? '';
 
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -130,7 +133,11 @@ class _AttendanceHistoryPageState extends State<AttendanceHistoryPage> {
         title: Text(subject, style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Text('$startTime - $endTime'),
         trailing: Text(
-          status == 'present' ? 'Present' : 'Absent',
+          status == 'present'
+              ? 'Present'
+              : status == 'absent'
+                  ? 'Absent'
+                  : 'Unknown',
           style: TextStyle(
             color: status == 'present' ? Colors.green : Colors.red,
             fontWeight: FontWeight.bold,
@@ -179,8 +186,14 @@ class _AttendanceHistoryPageState extends State<AttendanceHistoryPage> {
                         isExpanded: true,
                         value: initialMonth,
                         items: monthOptions.map((month) {
-                          final display = DateFormat('MMMM yyyy')
-                              .format(DateTime.parse('$month-01'));
+                          final display = () {
+                            try {
+                              return DateFormat('MMMM yyyy')
+                                  .format(DateTime.parse('$month-01'));
+                            } catch (_) {
+                              return month;
+                            }
+                          }();
                           return DropdownMenuItem<String>(
                             value: month,
                             child: Text(display),
