@@ -23,21 +23,7 @@ No remaining Medium Priority items at the moment (previous MP items have been ad
 
 ## 3. Low Priority (Nice-to-have / Polish)
 
-### LP-001
-- **Problem (what/where):** UI is functional but not cohesive; no global theme or design system.
-- **Why it matters:** “Final year project” polish and user confidence.
-- **Proposed fix (exact approach):** Add `ThemeData` (colors, typography), consistent spacing, and modern components; optionally add dark mode.
-- **Files involved (list):** `flutter/lib/main.dart`, `flutter/lib/screens/**`
-- **Risk level:** Low
-- **Verification steps (how to confirm):** Visual review + no layout overflows.
-
-### LP-002
-- **Problem (what/where):** Mixed/garbled log/label characters (e.g., “??”) in Flutter source.
-- **Why it matters:** Professionalism and readability.
-- **Proposed fix (exact approach):** Replace with clear text and consistent logging.
-- **Files involved (list):** `flutter/lib/services/background_task.dart`, `flutter/lib/main.dart`, `flutter/lib/screens/student/*`
-- **Risk level:** Low
-- **Verification steps (how to confirm):** Build runs; logs render correctly.
+No remaining Low Priority items at the moment (previous LP items have been addressed and removed from this plan).
 
 ---
 

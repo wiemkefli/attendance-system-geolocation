@@ -229,6 +229,8 @@ Behavior summary:
 - `MP-001` / `MP-003` / `MP-008`: Added a small Flutter `ApiClient`, disposed controllers, and fixed the default widget test to match the real UI.
 - `MP-009`: Migrated remaining Flutter screens off direct `http` calls, centralized token handling in `flutter/lib/services/auth_storage.dart`, and introduced a typed `StudentDashboard` model.
 - `MP-010`: Updated `attendance_api/composer.json` metadata so `composer validate` passes cleanly (CI-friendly); lock/vendor metadata refreshed.
+- `LP-001`: Added a global Material 3 theme (`flutter/lib/theme/app_theme.dart`) and removed hardcoded AppBar/button colors for a more cohesive UI (light/dark supported via system).
+- `LP-002`: Replaced remaining garbled/emoji-style UI labels with clear text + icons in the student timetable.
 
 ## License
 
