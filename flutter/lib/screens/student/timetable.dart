@@ -315,9 +315,22 @@ class _TimetablePageState extends State<TimetablePage> {
                                     style: TextStyle(color: Colors.grey[800]),
                                   ),
                                   const SizedBox(height: 10),
-                                  Text(
-                                    inRange ? '📍 In Range' : '⚠️ Too Far',
-                                    style: TextStyle(color: inRange ? Colors.green : Colors.red),
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        inRange ? Icons.location_on : Icons.warning_amber_rounded,
+                                        size: 18,
+                                        color: inRange ? Colors.green : Colors.red,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        inRange ? 'In range' : 'Too far',
+                                        style: TextStyle(
+                                          color: inRange ? Colors.green : Colors.red,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                   const SizedBox(height: 10),
                                   ElevatedButton.icon(
