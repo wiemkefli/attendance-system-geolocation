@@ -87,7 +87,6 @@ class _AdminMainPageState extends State<AdminMainPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Admin Dashboard'),
-        backgroundColor: Colors.blueAccent,
       ),
       drawer: const AdminDrawer(currentRoute: AppRoutes.adminHome),
       body: SingleChildScrollView(
@@ -126,6 +125,7 @@ class _AdminMainPageState extends State<AdminMainPage> {
   }
 
   Widget _buildSummaryCard(String value, String title, IconData icon) {
+    final colors = Theme.of(context).colorScheme;
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -134,7 +134,7 @@ class _AdminMainPageState extends State<AdminMainPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 40, color: Colors.blueAccent),
+            Icon(icon, size: 40, color: colors.primary),
             const SizedBox(height: 10),
             Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             Text(title, style: const TextStyle(fontSize: 14)),
@@ -145,9 +145,10 @@ class _AdminMainPageState extends State<AdminMainPage> {
   }
 
   Widget _buildTeacherList(String name, String subject) {
+    final colors = Theme.of(context).colorScheme;
     return ListTile(
       leading: CircleAvatar(
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: colors.primary,
         child: Text(name.isNotEmpty ? name[0] : '?', style: const TextStyle(color: Colors.white)),
       ),
       title: Text(name),

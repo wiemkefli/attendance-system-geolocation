@@ -179,7 +179,6 @@ class _StudentsPageState extends State<StudentsPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Manage Students'),
-        backgroundColor: Colors.blueAccent,
       ),
       drawer: const AdminDrawer(currentRoute: AppRoutes.adminStudents),
       body: Padding(
@@ -228,7 +227,6 @@ class _StudentsPageState extends State<StudentsPage> {
             const SizedBox(height: 10),
             ElevatedButton(
               onPressed: _addStudent,
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.blueAccent),
               child: const Text('Add Student'),
             ),
             const SizedBox(height: 20),

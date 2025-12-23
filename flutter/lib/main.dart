@@ -13,6 +13,7 @@ import 'package:attendancesystem/screens/student/profile_page.dart';
 import 'package:attendancesystem/screens/student/student_main_page.dart';
 import 'package:attendancesystem/screens/student/timetable.dart';
 import 'package:attendancesystem/services/background_task.dart' as bg_task;
+import 'package:attendancesystem/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:workmanager/workmanager.dart';
 
@@ -32,6 +33,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Attendance System',
+      theme: AppTheme.light(),
+      darkTheme: AppTheme.dark(),
+      themeMode: ThemeMode.system,
       initialRoute: AppRoutes.login,
       routes: {
         AppRoutes.login: (context) => const LoginPage(),
@@ -51,4 +55,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-

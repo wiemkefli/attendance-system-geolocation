@@ -146,7 +146,6 @@ class _GroupsPageState extends State<GroupsPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Manage Groups'),
-        backgroundColor: Colors.blueAccent,
       ),
       drawer: const AdminDrawer(currentRoute: AppRoutes.adminGroups),
       body: Padding(
@@ -164,7 +163,6 @@ class _GroupsPageState extends State<GroupsPage> {
           const SizedBox(height: 10),
           ElevatedButton(
             onPressed: _addGroup,
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.blueAccent),
             child: const Text('Add Group'),
           ),
           const SizedBox(height: 20),

@@ -143,7 +143,6 @@ class _LocationsPageState extends State<LocationsPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Manage Locations'),
-        backgroundColor: Colors.blueAccent,
       ),
       drawer: const AdminDrawer(currentRoute: AppRoutes.adminLocations),
       body: Padding(
@@ -179,7 +178,6 @@ class _LocationsPageState extends State<LocationsPage> {
           const SizedBox(height: 10),
           ElevatedButton(
             onPressed: _addLocation,
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.blueAccent),
             child: const Text('Add Location'),
           ),
           const SizedBox(height: 20),

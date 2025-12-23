@@ -90,7 +90,6 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Student Profile'),
-        backgroundColor: Colors.blueAccent,
       ),
       drawer: const StudentDrawer(currentRoute: AppRoutes.studentProfile),
       body: SingleChildScrollView(

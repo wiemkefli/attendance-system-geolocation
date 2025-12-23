@@ -58,7 +58,6 @@ class _StudentMainPageState extends State<StudentMainPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Student Dashboard'),
-        backgroundColor: Colors.blueAccent,
       ),
       drawer: const StudentDrawer(currentRoute: AppRoutes.studentHome),
       body: SingleChildScrollView(
@@ -107,6 +106,7 @@ class _StudentMainPageState extends State<StudentMainPage> {
   }
 
   Widget _buildSummaryCard(String value, String title, IconData icon) {
+    final colors = Theme.of(context).colorScheme;
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -115,7 +115,7 @@ class _StudentMainPageState extends State<StudentMainPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 40, color: Colors.blueAccent),
+            Icon(icon, size: 40, color: colors.primary),
             const SizedBox(height: 10),
             Text(value,
                 style:
@@ -128,9 +128,10 @@ class _StudentMainPageState extends State<StudentMainPage> {
   }
 
   Widget _buildClassSchedule(String time, String subject, String room) {
+    final colors = Theme.of(context).colorScheme;
     return Card(
       child: ListTile(
-        leading: const Icon(Icons.access_time, color: Colors.blueAccent),
+        leading: Icon(Icons.access_time, color: colors.primary),
         title: Text(subject),
         subtitle: Text('Time: $time\nRoom: $room'),
       ),

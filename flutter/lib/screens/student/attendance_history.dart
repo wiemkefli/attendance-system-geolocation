@@ -127,7 +127,6 @@ class _AttendanceHistoryPageState extends State<AttendanceHistoryPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Attendance History'),
-        backgroundColor: Colors.blueAccent,
       ),
       drawer: const StudentDrawer(currentRoute: AppRoutes.studentAttendanceHistory),
       body: _isLoading

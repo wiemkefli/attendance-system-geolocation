@@ -213,7 +213,6 @@ class _TimetablePageState extends State<TimetablePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Timetable'),
-        backgroundColor: Colors.blueAccent,
       ),
       drawer: const StudentDrawer(currentRoute: AppRoutes.studentTimetable),
       body: _isLoading

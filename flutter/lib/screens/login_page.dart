@@ -147,11 +147,11 @@ class LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text('Login'),
-        backgroundColor: Colors.blueAccent,
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -161,12 +161,12 @@ class LoginPageState extends State<LoginPage> {
             children: [
               Image.asset('assets/attt.png', height: 120),
               const SizedBox(height: 20),
-              const Text(
+              Text(
                 'Welcome to Attendance System',
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
-                  color: Colors.blueAccent,
+                  color: colors.primary,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -200,7 +200,7 @@ class LoginPageState extends State<LoginPage> {
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10)),
                   prefixIcon:
-                      const Icon(Icons.person, color: Colors.blueAccent),
+                      Icon(Icons.person, color: colors.primary),
                 ),
               ),
               const SizedBox(height: 20),
@@ -211,13 +211,13 @@ class LoginPageState extends State<LoginPage> {
                   labelText: 'Password',
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10)),
-                  prefixIcon: const Icon(Icons.lock, color: Colors.blueAccent),
+                  prefixIcon: Icon(Icons.lock, color: colors.primary),
                   suffixIcon: IconButton(
                     icon: Icon(
                       _obscurePassword
                           ? Icons.visibility_off
                           : Icons.visibility,
-                      color: Colors.blueAccent,
+                      color: colors.primary,
                     ),
                     onPressed: () {
                       setState(() {
@@ -233,7 +233,6 @@ class LoginPageState extends State<LoginPage> {
                 child: ElevatedButton(
                   onPressed: _login,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueAccent,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),

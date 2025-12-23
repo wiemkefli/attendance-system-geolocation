@@ -210,7 +210,6 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Group Attendance Report"),
-        backgroundColor: Colors.blueAccent,
       ),
       drawer: const AdminDrawer(currentRoute: AppRoutes.adminAttendanceReport),
       body: SingleChildScrollView(
@@ -274,7 +273,6 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
                 ElevatedButton.icon(
                   icon: const Icon(Icons.search),
                   label: const Text("Generate Report"),
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.blueAccent),
                   onPressed: _fetchAttendanceSummary,
                 ),
                 const SizedBox(width: 10),

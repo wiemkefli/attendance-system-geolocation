@@ -251,7 +251,7 @@ class _LessonsPageState extends State<LessonsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Manage Lessons'), backgroundColor: Colors.blueAccent),
+      appBar: AppBar(title: const Text('Manage Lessons')),
       drawer: const AdminDrawer(currentRoute: AppRoutes.adminLessons),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -348,7 +348,6 @@ class _LessonsPageState extends State<LessonsPage> {
 
           ElevatedButton(
             onPressed: _addLesson,
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.blueAccent),
             child: const Text('Add Lesson'),
           ),
           const SizedBox(height: 20),
