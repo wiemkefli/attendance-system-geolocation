@@ -2,11 +2,10 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
-import 'package:attendancesystem/config/api_config.dart';
+import 'package:attendancesystem/services/api_client.dart';
 
 import 'package:attendancesystem/screens/student/student_main_page.dart';
 import 'package:attendancesystem/screens/student/attendance_history.dart';
@@ -23,8 +22,6 @@ class TimetablePage extends StatefulWidget {
 class _TimetablePageState extends State<TimetablePage> {
   DateTime selectedDate = DateTime.now();
   List<Map<String, dynamic>> _lessons = [];
-  int? studentId;
-  int? groupId;
   String? token;
   Position? _currentPosition;
   bool _isLoading = false;
@@ -55,14 +52,8 @@ class _TimetablePageState extends State<TimetablePage> {
       return;
     }
 
-    final decoded = JwtDecoder.decode(token!);
-    studentId = decoded['data']['student_id'];
-    groupId = decoded['data']['group_id'];
-
-    if (studentId != null && groupId != null) {
-      if (!mounted) return;
-      await _selectDate(context);
-    }
+    if (!mounted) return;
+    await _selectDate(context);
 
     if (!mounted) return;
     setState(() => _isLoading = false);
@@ -103,100 +94,69 @@ class _TimetablePageState extends State<TimetablePage> {
   }
 
   Future<void> _fetchLessons() async {
-    final response = await http.get(
-      apiUri('lessons_api.php'),
-      headers: {'Authorization': 'Bearer $token'},
-    );
+    if (token == null) return;
 
-    if (response.statusCode == 200) {
-      final data = List<Map<String, dynamic>>.from(jsonDecode(response.body));
-      String selectedDay = DateFormat('EEEE').format(selectedDate).trim();
-
-      List<Map<String, dynamic>> filteredLessons = [];
-
-      for (var lesson in data) {
-        if (int.tryParse(lesson['group_id'].toString()) != groupId) continue;
-
-        final start = DateTime.parse(lesson['start_date']);
-        final end = DateTime.parse(lesson['end_date']);
-        final lessonDay = lesson['day_of_week'].toString().trim();
-
-        if (lessonDay == selectedDay &&
-            selectedDate.isAfter(start.subtract(const Duration(days: 1))) &&
-            selectedDate.isBefore(end.add(const Duration(days: 1)))) {
-          
-          final lessonId = int.tryParse(lesson['lesson_id'].toString());
-          if (lessonId != null) {
-            final status = await _getAttendanceStatus(lessonId);
-            lesson['attendance_status'] = status;
-          }
-
-          double? lat = double.tryParse(lesson['latitude']?.toString() ?? '');
-          double? lon = double.tryParse(lesson['longitude']?.toString() ?? '');
-
-          if (_currentPosition != null && lat != null && lon != null) {
-            lesson['distance'] = Geolocator.distanceBetween(
-              _currentPosition!.latitude,
-              _currentPosition!.longitude,
-              lat,
-              lon,
-            );
-          }
-
-          filteredLessons.add(lesson);
-        }
-      }
-
-      setState(() {
-        _lessons = filteredLessons;
-      });
-
-      
-
-    }
-  }
-
-  Future<String?> _getAttendanceStatus(int lessonId) async {
     final selected = DateFormat('yyyy-MM-dd').format(selectedDate);
-    final res = await http.get(
-      apiUri(
-        'get_attendance_status.php',
-        queryParameters: {
-          'student_id': studentId,
-          'lesson_id': lessonId,
-          'date': selected,
-        },
-      ),
-      headers: {'Authorization': 'Bearer $token'},
+    final response = await ApiClient.get(
+      'student_timetable.php',
+      queryParameters: {'date': selected},
+      token: token,
     );
 
-    if (res.statusCode == 200) {
-      final data = jsonDecode(res.body);
-      return data['status'];
+    if (response.statusCode != 200) {
+      debugPrint('Timetable fetch failed: ${response.statusCode}');
+      return;
     }
-    return null;
+
+    final decoded = jsonDecode(response.body);
+    if (decoded is! Map<String, dynamic> || decoded['success'] != true) {
+      debugPrint('Timetable response invalid');
+      return;
+    }
+
+    final data = decoded['data'];
+    if (data is! List) {
+      debugPrint('Timetable data is not a list');
+      return;
+    }
+
+    final lessons = List<Map<String, dynamic>>.from(data);
+    for (final lesson in lessons) {
+      final lat = double.tryParse(lesson['latitude']?.toString() ?? '');
+      final lon = double.tryParse(lesson['longitude']?.toString() ?? '');
+
+      if (_currentPosition != null && lat != null && lon != null) {
+        lesson['distance'] = Geolocator.distanceBetween(
+          _currentPosition!.latitude,
+          _currentPosition!.longitude,
+          lat,
+          lon,
+        );
+      }
+    }
+
+    if (!mounted) return;
+    setState(() {
+      _lessons = lessons;
+    });
   }
 
   Future<void> _markAttendance(int lessonId) async {
-    if (studentId == null) return;
+    if (token == null) return;
 
     final selected = DateFormat('yyyy-MM-dd').format(selectedDate);
     final position = await Geolocator.getCurrentPosition();
 
-    final response = await http.post(
-      apiUri('mark_attendance.php'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
-        'student_id': studentId,
+    final response = await ApiClient.postJson(
+      'mark_attendance.php',
+      token: token,
+      body: {
         'lesson_id': lessonId,
         'attendance_date': selected,
         'status': 'present',
         'latitude': position.latitude,
         'longitude': position.longitude,
-      }),
+      },
     );
 
     final result = jsonDecode(response.body);
@@ -226,18 +186,15 @@ class _TimetablePageState extends State<TimetablePage> {
           int.parse(timeParts[0]), int.parse(timeParts[1]));
 
       if (selected.isBefore(today) || (selected.isAtSameMomentAs(today) && now.isAfter(lessonEnd))) {
-        await http.post(
-          apiUri('mark_attendance.php'),
-          headers: {
-            'Authorization': 'Bearer $token',
-            'Content-Type': 'application/json',
-          },
-          body: jsonEncode({
-            'student_id': studentId,
+        if (token == null) continue;
+        await ApiClient.postJson(
+          'mark_attendance.php',
+          token: token,
+          body: {
             'lesson_id': lessonId,
             'attendance_date': DateFormat('yyyy-MM-dd').format(selectedDate),
             'status': 'absent',
-          }),
+          },
         );
         await prefs.setBool(cacheKey, true);
       }

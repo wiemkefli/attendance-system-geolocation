@@ -1,127 +1,116 @@
 import 'dart:convert';
 import 'dart:developer' as developer;
+
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:workmanager/workmanager.dart';
 import 'package:intl/intl.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import '../config/api_config.dart';
+import 'package:workmanager/workmanager.dart';
+
+import 'api_client.dart';
 
 const String taskName = "geoBackgroundTask";
-final FlutterLocalNotificationsPlugin localNotifications = FlutterLocalNotificationsPlugin();
+final FlutterLocalNotificationsPlugin localNotifications =
+    FlutterLocalNotificationsPlugin();
 
 @pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
     developer.log("[WORKMANAGER] Task started at ${DateTime.now()}");
 
-    const AndroidInitializationSettings androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const InitializationSettings initSettings = InitializationSettings(android: androidInit);
+    const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const initSettings = InitializationSettings(android: androidInit);
     await localNotifications.initialize(initSettings);
 
     final prefs = await SharedPreferences.getInstance();
-    final groupId = prefs.getInt('group_id');
     final token = prefs.getString('token');
-
-    developer.log("[DEBUG] Token: ${token?.substring(0, 10)}...");
-    developer.log("[DEBUG] groupId: $groupId");
-
-    if (token == null || groupId == null) {
-      developer.log("[DEBUG] Missing token or groupId");
+    if (token == null || token.isEmpty) {
+      developer.log("[WORKMANAGER] Missing token; skipping.");
       return Future.value(true);
     }
 
     final now = DateTime.now();
-    final todayWeekday = DateFormat('EEEE').format(now);
-    developer.log("[DEBUG] Today is: $todayWeekday");
+    final today = DateFormat('yyyy-MM-dd').format(now);
 
     Position position;
     try {
       position = await Geolocator.getCurrentPosition();
-      developer.log("[DEBUG] Current position: ${position.latitude}, ${position.longitude}");
     } catch (e) {
-      developer.log("[ERROR] Failed to get location: $e");
+      developer.log("[WORKMANAGER] Failed to get location: $e");
       return Future.value(true);
     }
 
-    final response = await http.get(
-      apiUri('lessons_api.php'),
-      headers: {'Authorization': 'Bearer $token'},
+    final response = await ApiClient.get(
+      'student_timetable.php',
+      queryParameters: {'date': today},
+      token: token,
     );
 
     if (response.statusCode != 200) {
-      developer.log("[ERROR] Failed to fetch lessons: ${response.statusCode}");
+      developer.log("[WORKMANAGER] Timetable HTTP ${response.statusCode}");
       return Future.value(true);
     }
 
-    final List<dynamic> lessons = jsonDecode(response.body);
-    developer.log("[DEBUG] Lessons fetched: ${lessons.length}");
-
-    for (var lesson in lessons) {
-      developer.log("👉 Checking lesson: ${lesson['subject']}");
-
-      if (lesson['group_id'] != groupId) {
-        developer.log("❌ Skipped: group_id mismatch (${lesson['group_id']} != $groupId)");
-        continue;
-      }
-
-      if (lesson['day_of_week'] != todayWeekday) {
-        developer.log("❌ Skipped: not scheduled for today (${lesson['day_of_week']} != $todayWeekday)");
-        continue;
-      }
-
-      final DateTime start = DateTime.parse(lesson['start_date']);
-      final DateTime end = DateTime.parse(lesson['end_date']);
-
-      final nowDateOnly = DateTime(now.year, now.month, now.day);
-      final startDateOnly = DateTime(start.year, start.month, start.day);
-      final endDateOnly = DateTime(end.year, end.month, end.day);
-
-      if (nowDateOnly.isBefore(startDateOnly) || nowDateOnly.isAfter(endDateOnly)) {
-        developer.log("❌ Skipped: today not in date range (\$startDateOnly → \$endDateOnly)");
-        continue;
-      }
-
-
-      final List<String> timeParts = lesson['start_time'].split(":");
-      final lessonStart = DateTime(now.year, now.month, now.day, int.parse(timeParts[0]), int.parse(timeParts[1]));
-      final minutesUntil = lessonStart.difference(now).inMinutes;
-
-      if (minutesUntil < 0 || minutesUntil > 15) {
-  developer.log("❌ Skipped: class not within next 15 minutes ($minutesUntil minutes)");
-  continue;
-}
-
-
-      final double lat = (lesson['latitude'] as num).toDouble();
-      final double lon = (lesson['longitude'] as num).toDouble();
-      final distance = Geolocator.distanceBetween(position.latitude, position.longitude, lat, lon);
-
-      developer.log("⏰ $minutesUntil min to class | 📍 $distance m to location");
-
-      if (distance > 100) {
-        developer.log("🔔 Triggering notification!");
-        await localNotifications.show(
-          DateTime.now().millisecondsSinceEpoch ~/ 1000,
-          'Reminder',
-          '${lesson['subject']} starts in $minutesUntil minutes — you are too far!',
-          const NotificationDetails(
-            android: AndroidNotificationDetails(
-              'class_alerts',
-              'Class Alerts',
-              channelDescription: 'Notify if student is too far from class',
-              importance: Importance.max,
-              priority: Priority.high,
-            ),
-          ),
-        );
-      } else {
-        developer.log("✅ Student is within range (${distance.toStringAsFixed(1)} m), no notification needed.");
-      }
+    final decoded = jsonDecode(response.body);
+    if (decoded is! Map<String, dynamic> || decoded['success'] != true) {
+      developer.log("[WORKMANAGER] Invalid timetable response body");
+      return Future.value(true);
     }
 
-    developer.log("[WORKMANAGER] Task complete ✅");
+    final lessons = decoded['data'];
+    if (lessons is! List) {
+      developer.log("[WORKMANAGER] Timetable data is not a list");
+      return Future.value(true);
+    }
+
+    for (final lesson in lessons) {
+      final startTime = (lesson as Map<String, dynamic>)['start_time']?.toString();
+      if (startTime == null) continue;
+
+      final timeParts = startTime.split(':');
+      if (timeParts.length < 2) continue;
+
+      final lessonStart = DateTime(
+        now.year,
+        now.month,
+        now.day,
+        int.tryParse(timeParts[0]) ?? 0,
+        int.tryParse(timeParts[1]) ?? 0,
+      );
+
+      final minutesUntil = lessonStart.difference(now).inMinutes;
+      if (minutesUntil < 0 || minutesUntil > 15) continue;
+
+      final lat = (lesson['latitude'] as num).toDouble();
+      final lon = (lesson['longitude'] as num).toDouble();
+      final distance = Geolocator.distanceBetween(
+        position.latitude,
+        position.longitude,
+        lat,
+        lon,
+      );
+
+      if (distance <= 100) continue;
+
+      final subject = lesson['subject']?.toString() ?? 'Class';
+      await localNotifications.show(
+        DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        'Reminder',
+        '$subject starts in $minutesUntil minutes - you are too far!',
+        const NotificationDetails(
+          android: AndroidNotificationDetails(
+            'class_alerts',
+            'Class Alerts',
+            channelDescription: 'Notify if student is too far from class',
+            importance: Importance.max,
+            priority: Priority.high,
+          ),
+        ),
+      );
+    }
+
+    developer.log("[WORKMANAGER] Task complete");
     return Future.value(true);
   });
 }
+
