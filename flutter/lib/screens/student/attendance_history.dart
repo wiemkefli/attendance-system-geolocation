@@ -27,23 +27,43 @@ class _AttendanceHistoryPageState extends State<AttendanceHistoryPage> {
   Future<void> _fetchHistoryWithToken() async {
     final token = await AuthStorage.getStudentToken();
 
-    if (token == null) return;
-
-    final response = await ApiClient.get(
-      'get_attendance_history.php',
-      token: token,
-    );
-
-    if (response.statusCode == 200) {
-      final json = ApiClient.decodeJsonMap(response.body);
-      if (json['success'] == true) {
-        setState(() {
-          _allHistory = List<Map<String, dynamic>>.from(json['data']);
-        });
-        _filterAndGroupByMonth(_selectedMonth);
-      }
+    if (token == null) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      return;
     }
 
+    try {
+      final response = await ApiClient.get(
+        'get_attendance_history.php',
+        token: token,
+      );
+
+      if (response.statusCode == 200) {
+        final json = ApiClient.decodeJsonMap(response.body);
+        if (json['success'] == true) {
+          if (!mounted) return;
+          setState(() {
+            _allHistory = List<Map<String, dynamic>>.from(json['data']);
+          });
+
+          final months = _generateMonthOptions();
+          if (months.isNotEmpty) {
+            final targetMonth =
+                months.contains(_selectedMonth) ? _selectedMonth : months.first;
+            _filterAndGroupByMonth(targetMonth);
+          } else {
+            setState(() {
+              _groupedHistory = {};
+            });
+          }
+        }
+      }
+    } catch (_) {
+      // Swallow parsing/network exceptions and show an empty state.
+    }
+
+    if (!mounted) return;
     setState(() => _isLoading = false);
   }
 
@@ -123,6 +143,10 @@ class _AttendanceHistoryPageState extends State<AttendanceHistoryPage> {
   @override
   Widget build(BuildContext context) {
     final monthOptions = _generateMonthOptions();
+    final initialMonth = monthOptions.contains(_selectedMonth)
+        ? _selectedMonth
+        : (monthOptions.isNotEmpty ? monthOptions.first : null);
+    final colors = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -136,7 +160,7 @@ class _AttendanceHistoryPageState extends State<AttendanceHistoryPage> {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
                   child: DropdownButtonFormField<String>(
-                    initialValue: _selectedMonth,
+                    initialValue: initialMonth,
                     onChanged: (value) {
                       if (value != null) _filterAndGroupByMonth(value);
                     },
@@ -167,10 +191,10 @@ class _AttendanceHistoryPageState extends State<AttendanceHistoryPage> {
                                   padding: const EdgeInsets.only(bottom: 8, top: 16),
                                   child: Text(
                                     entry.key,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.blueAccent,
+                                      color: colors.primary,
                                     ),
                                   ),
                                 ),
