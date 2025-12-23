@@ -208,13 +208,11 @@ Behavior summary:
 
 ## Common Gotchas
 
-- **Android emulator vs device networking**: `10.0.2.2` works only on the Android emulator. For a physical device, use your machine’s LAN IP (example: `http://192.168.1.10:8000`) and ensure the device can reach it.
-- **Hard-coded credentials/secrets**:
-  - DB credentials and JWT secret can be set in `attendance_api/.env` (see `attendance_api/.env.example`)
-  - Admin passwords are bcrypt-hashed (legacy plain-text is auto-upgraded on first successful login)
+- **Android emulator vs device networking**: `10.0.2.2` works only on the Android emulator. For a physical device, use your machine's LAN IP (example: `http://192.168.1.10:8000`) and ensure the device can reach it.
+- **Backend env config**: Create `attendance_api/.env` from `attendance_api/.env.example` (set `DB_PASS` and a strong `JWT_SECRET`), especially if your MySQL password is not the legacy default.
+- **Admin API auth**: Admin endpoints require `Authorization: Bearer <admin_token>` when `ADMIN_AUTH_REQUIRED=true` (the app stores this as `admin_token` after admin login).
 - **Composer install location**: PHP dependencies are expected at `attendance_api/vendor/`; run `composer install` inside `attendance_api/` (not the repo root).
 - **`export_attendance_pdf.php`**: references `tcpdf/tcpdf.php`, but `attendance_api/tcpdf/` is not present in this repo; the Flutter app exports PDFs client-side instead.
-- **`get_subjects_by_group.php`**: returns a simple JSON list of subject names for a given `group_id` (used by the Flutter admin report filter).
 
 ## Development Notes
 
