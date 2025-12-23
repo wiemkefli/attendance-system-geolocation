@@ -23,13 +23,7 @@ No remaining Medium Priority items at the moment (previous MP items have been ad
 
 ## 3. Low Priority (Nice-to-have / Polish)
 
-### LP-003
-- **Problem (what/where):** `README.md` contains an ever-growing changelog section.
-- **Why it matters:** Makes README harder to scan; changelog is better as a dedicated file.
-- **Proposed fix (exact approach):** Move changelog entries into a root `CHANGELOG.md` and link it from README.
-- **Files involved (list):** `README.md`, `CHANGELOG.md`
-- **Risk level:** Low
-- **Verification steps (how to confirm):** README remains clear; changelog is accessible and readable.
+No remaining Low Priority items at the moment (previous LP items have been addressed and removed from this plan).
 
 ---
 
