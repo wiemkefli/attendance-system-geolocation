@@ -233,6 +233,7 @@ Behavior summary:
 - `LP-002`: Replaced remaining garbled/emoji-style UI labels with clear text + icons in the student timetable.
 - `DM-001` / `DM-002`: Updated Flutter dependencies (lockfile) and removed unused `dart_jsonwebtoken`.
 - `DM-003` / `DM-004` / `DM-005`: Targeted PHP 8.2+, upgraded `firebase/php-jwt` to v7, and adopted `vlucas/phpdotenv` (with fallback) for `.env` loading.
+- `DM-006`: Bumped Dart SDK constraint to 3.10+ and refreshed the Flutter lockfile after moving to newer stable tooling.
 
 ## License
 

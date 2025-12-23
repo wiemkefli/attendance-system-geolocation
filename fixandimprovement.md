@@ -39,16 +39,7 @@ No remaining Low Priority items at the moment (previous LP items have been addre
 - **MySQL schema/index improvements:**
   - Add/confirm composite indexes for report queries.
   - Stop shipping a "drop DB" script as the only migration strategy; introduce repeatable migrations (even a simple numbered SQL migrations folder).
-
-### DM-006
-- **Problem (what/where):** Some transitive dependencies are pinned below latest (requires newer Flutter/Dart and/or major plugin bumps).
-- **Why it matters:** Bugfix/security updates; reduces friction on newer machines.
-- **Proposed fix (exact approach):**
-  - Upgrade local Flutter toolchain to latest **stable** and bump `environment.sdk` if needed.
-  - Re-run `flutter pub outdated` and then upgrade major versions **one-by-one**, verifying after each change.
-- **Files involved (list):** `flutter/pubspec.yaml`, `flutter/pubspec.lock`, `README.md`
-- **Risk level:** Medium
-- **Verification steps (how to confirm):** `flutter pub get`, `flutter analyze`, `flutter test`, quick manual run on emulator/device.
+- **Note:** Even on latest stable, some transitive packages may remain behind “Latest” due to Flutter SDK pinning; avoid `dependency_overrides` unless a specific issue forces it.
 
 ---
 
