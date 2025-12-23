@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:attendancesystem/services/background_task.dart' as bg_task;
 import 'package:attendancesystem/services/api_client.dart';
+import 'package:attendancesystem/services/auth_storage.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class LoginPage extends StatefulWidget {
@@ -80,23 +80,29 @@ class LoginPageState extends State<LoginPage> {
       if (!mounted) return;
 
       if (data['success'] == true) {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('user_type', userType!);
+        await AuthStorage.setUserType(userType!);
 
         if (userType == 'Admin') {
           final token = data['token'];
           if (token is String && token.isNotEmpty) {
-            await prefs.setString('admin_token', token);
+            await AuthStorage.setAdminToken(token);
           }
-          await prefs.remove('token');
-          await prefs.remove('group_id');
+          await AuthStorage.clearStudentSession();
 
           if (!mounted) return;
           Navigator.pushNamed(context, '/admin');
         } else {
-          await prefs.remove('admin_token');
-          await prefs.setString('token', data['token']);
-          await prefs.setInt('group_id', data['group_id']);
+          await AuthStorage.setAdminToken(null);
+          final token = data['token']?.toString();
+          final groupId = int.tryParse(data['group_id']?.toString() ?? '');
+          if (token == null || token.isEmpty || groupId == null) {
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Invalid login response from server')),
+            );
+            return;
+          }
+          await AuthStorage.setStudentSession(token: token, groupId: groupId);
 
           final notificationStatus = await Permission.notification.request();
           if (notificationStatus.isGranted) {

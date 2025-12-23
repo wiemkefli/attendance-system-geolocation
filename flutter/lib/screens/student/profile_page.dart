@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:attendancesystem/services/api_client.dart';
+import 'package:attendancesystem/services/auth_storage.dart';
 import 'package:attendancesystem/config/app_routes.dart';
 import 'package:attendancesystem/widgets/student_drawer.dart';
 
@@ -35,8 +35,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
   }
 
   Future<void> _loadStudentInfo() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
+    final token = await AuthStorage.getStudentToken();
 
     if (token != null) {
       final response = await ApiClient.get('student_profile.php', token: token);
@@ -65,8 +64,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
       return;
     }
 
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
+    final token = await AuthStorage.getStudentToken();
     if (token == null) return;
 
     setState(() => _isUpdating = true);

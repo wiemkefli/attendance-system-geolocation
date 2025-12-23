@@ -1,9 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:attendancesystem/config/api_config.dart';
 import 'package:attendancesystem/config/app_routes.dart';
+import 'package:attendancesystem/services/api_client.dart';
+import 'package:attendancesystem/services/auth_storage.dart';
 import 'package:attendancesystem/widgets/admin_drawer.dart';
 
 class AdminMainPage extends StatefulWidget {
@@ -34,18 +33,12 @@ class _AdminMainPageState extends State<AdminMainPage> {
     _fetchTeachers();
   }
 
-  Future<String?> _getAdminToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('admin_token');
-  }
-
   Future<void> _fetchAdminDashboardData() async {
-    final url = apiUri('admin_dashboard.php');
-    final token = await _getAdminToken();
+    final token = await AuthStorage.getAdminToken();
     if (token == null) return;
 
     try {
-      final response = await http.post(url, headers: {'Authorization': 'Bearer $token'});
+      final response = await ApiClient.postJson('admin_dashboard.php', token: token);
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['success'] == true) {
@@ -66,11 +59,14 @@ class _AdminMainPageState extends State<AdminMainPage> {
   }
 
   Future<void> _fetchTeachers() async {
-    final url = apiUri('teacher_api.php', queryParameters: {'simple': 'true'});
     try {
-      final token = await _getAdminToken();
+      final token = await AuthStorage.getAdminToken();
       if (token == null) return;
-      final response = await http.get(url, headers: {'Authorization': 'Bearer $token'});
+      final response = await ApiClient.get(
+        'teacher_api.php',
+        queryParameters: {'simple': 'true'},
+        token: token,
+      );
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data is List) {

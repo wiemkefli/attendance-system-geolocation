@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:attendancesystem/services/api_client.dart';
+import 'package:attendancesystem/services/auth_storage.dart';
 import 'package:attendancesystem/config/app_routes.dart';
 import 'package:attendancesystem/widgets/student_drawer.dart';
 
@@ -34,8 +35,7 @@ class _TimetablePageState extends State<TimetablePage> {
 
   Future<void> _initWithJWT() async {
     setState(() => _isLoading = true);
-    final prefs = await SharedPreferences.getInstance();
-    token = prefs.getString('token');
+    token = await AuthStorage.getStudentToken();
 
     if (token == null || JwtDecoder.isExpired(token!)) {
       if (mounted) {

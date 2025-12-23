@@ -1,10 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:attendancesystem/config/api_config.dart';
 import 'package:attendancesystem/config/app_routes.dart';
+import 'package:attendancesystem/services/api_client.dart';
+import 'package:attendancesystem/services/auth_storage.dart';
 import 'package:attendancesystem/widgets/admin_drawer.dart';
 
 class LocationsPage extends StatefulWidget {
@@ -35,17 +34,13 @@ class _LocationsPageState extends State<LocationsPage> {
     _loadLocations();
   }
 
-  Future<String?> _getAdminToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('admin_token');
-  }
-
   Future<void> _loadLocations() async {
-    final token = await _getAdminToken();
+    final token = await AuthStorage.getAdminToken();
     if (token == null) return;
-    final response = await http.get(
-      apiUri('location_api.php', queryParameters: {'action': 'GET'}),
-      headers: {'Authorization': 'Bearer $token'},
+    final response = await ApiClient.get(
+      'location_api.php',
+      queryParameters: {'action': 'GET'},
+      token: token,
     );
 
     try {
@@ -85,17 +80,17 @@ class _LocationsPageState extends State<LocationsPage> {
       return;
     }
 
-    final token = await _getAdminToken();
+    final token = await AuthStorage.getAdminToken();
     if (token == null) return;
 
-    final response = await http.post(
-      apiUri('location_api.php'),
-      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
-      body: jsonEncode({
+    final response = await ApiClient.postJson(
+      'location_api.php',
+      token: token,
+      body: {
         'name': name,
         'latitude': latitude,
         'longitude': longitude,
-      }),
+      },
     );
 
     try {
@@ -118,12 +113,12 @@ class _LocationsPageState extends State<LocationsPage> {
   }
 
   Future<void> _deleteLocation(int locationId) async {
-    final token = await _getAdminToken();
+    final token = await AuthStorage.getAdminToken();
     if (token == null) return;
-    final response = await http.delete(
-      apiUri('location_api.php'),
-      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
-      body: jsonEncode({'location_id': locationId}),
+    final response = await ApiClient.deleteJson(
+      'location_api.php',
+      token: token,
+      body: {'location_id': locationId},
     );
 
     try {

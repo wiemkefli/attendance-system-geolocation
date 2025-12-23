@@ -1,10 +1,8 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:attendancesystem/config/api_config.dart';
 import 'package:attendancesystem/config/app_routes.dart';
+import 'package:attendancesystem/services/api_client.dart';
+import 'package:attendancesystem/services/auth_storage.dart';
 import 'package:attendancesystem/widgets/student_drawer.dart';
 
 class AttendanceHistoryPage extends StatefulWidget {
@@ -27,18 +25,17 @@ class _AttendanceHistoryPageState extends State<AttendanceHistoryPage> {
   }
 
   Future<void> _fetchHistoryWithToken() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
+    final token = await AuthStorage.getStudentToken();
 
     if (token == null) return;
 
-    final response = await http.get(
-      apiUri('get_attendance_history.php'),
-      headers: {'Authorization': 'Bearer $token'},
+    final response = await ApiClient.get(
+      'get_attendance_history.php',
+      token: token,
     );
 
     if (response.statusCode == 200) {
-      final json = jsonDecode(response.body);
+      final json = ApiClient.decodeJsonMap(response.body);
       if (json['success'] == true) {
         setState(() {
           _allHistory = List<Map<String, dynamic>>.from(json['data']);
@@ -113,7 +110,7 @@ class _AttendanceHistoryPageState extends State<AttendanceHistoryPage> {
         title: Text(subject, style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Text('$startTime - $endTime'),
         trailing: Text(
-          status == 'present' ? '✅ Present' : '❌ Absent',
+          status == 'present' ? 'Present' : 'Absent',
           style: TextStyle(
             color: status == 'present' ? Colors.green : Colors.red,
             fontWeight: FontWeight.bold,

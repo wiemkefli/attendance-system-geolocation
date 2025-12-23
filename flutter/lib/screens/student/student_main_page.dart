@@ -1,13 +1,10 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:attendancesystem/config/api_config.dart';
 import 'package:attendancesystem/config/app_routes.dart';
+import 'package:attendancesystem/models/student_dashboard.dart';
+import 'package:attendancesystem/services/api_client.dart';
+import 'package:attendancesystem/services/auth_storage.dart';
 import 'package:attendancesystem/widgets/student_drawer.dart';
-
-const String taskName = "geoBackgroundTask";
 
 class StudentMainPage extends StatefulWidget {
   const StudentMainPage({super.key});
@@ -20,7 +17,7 @@ class _StudentMainPageState extends State<StudentMainPage> {
   String attendanceRate = '...';
   int subjectsCount = 0;
   int upcomingClasses = 0;
-  List<Map<String, dynamic>> todayClasses = [];
+  List<TodayClass> todayClasses = [];
 
   @override
   void initState() {
@@ -32,30 +29,24 @@ class _StudentMainPageState extends State<StudentMainPage> {
 
 
   Future<void> _fetchDashboardData() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
+    final token = await AuthStorage.getStudentToken();
     if (token == null) return;
 
     final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-    final url = apiUri('student_dashboard.php');
-
-    final response = await http.post(
-      url,
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({'date': today}),
+    final response = await ApiClient.postJson(
+      'student_dashboard.php',
+      token: token,
+      body: {'date': today},
     );
 
     if (response.statusCode == 200) {
-      final data = json.decode(response.body);
+      final data = ApiClient.decodeJsonMap(response.body);
+      final dashboard = StudentDashboard.fromJson(data);
       setState(() {
-        attendanceRate = data['attendance_rate'] ?? '0%';
-        subjectsCount = data['subjects'] ?? 0;
-        upcomingClasses = data['upcoming'] ?? 0;
-        todayClasses =
-            List<Map<String, dynamic>>.from(data['today_classes'] ?? []);
+        attendanceRate = dashboard.attendanceRate;
+        subjectsCount = dashboard.subjectsCount;
+        upcomingClasses = dashboard.upcomingClasses;
+        todayClasses = dashboard.todayClasses;
       });
     } else {
       debugPrint('Dashboard fetch failed: ${response.statusCode}');
@@ -103,9 +94,9 @@ class _StudentMainPageState extends State<StudentMainPage> {
                 : Column(
                     children: todayClasses
                         .map((cls) => _buildClassSchedule(
-                              cls['time'],
-                              cls['subject'],
-                              cls['room'],
+                              cls.time,
+                              cls.subject,
+                              cls.room,
                             ))
                         .toList(),
                   ),

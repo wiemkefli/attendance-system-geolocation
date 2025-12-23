@@ -35,10 +35,32 @@ class ApiClient {
     return http.post(uri, headers: headers, body: encodedBody).timeout(_timeout);
   }
 
+  static Future<http.Response> deleteJson(
+    String path, {
+    Object? body,
+    String? token,
+  }) {
+    final uri = apiUri(path);
+    final headers = <String, String>{
+      'Content-Type': 'application/json',
+      if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+    };
+
+    final encodedBody = body == null ? null : jsonEncode(body);
+    return http
+        .delete(uri, headers: headers, body: encodedBody)
+        .timeout(_timeout);
+  }
+
   static Map<String, dynamic> decodeJsonMap(String body) {
     final decoded = jsonDecode(body);
     if (decoded is Map<String, dynamic>) return decoded;
     throw const FormatException('Expected JSON object');
   }
-}
 
+  static List<dynamic> decodeJsonList(String body) {
+    final decoded = jsonDecode(body);
+    if (decoded is List) return decoded;
+    throw const FormatException('Expected JSON array');
+  }
+}

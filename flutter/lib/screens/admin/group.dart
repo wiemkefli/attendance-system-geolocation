@@ -1,9 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:attendancesystem/config/api_config.dart';
 import 'package:attendancesystem/config/app_routes.dart';
+import 'package:attendancesystem/services/api_client.dart';
+import 'package:attendancesystem/services/auth_storage.dart';
 import 'package:attendancesystem/widgets/admin_drawer.dart';
 
 class GroupsPage extends StatefulWidget {
@@ -30,17 +29,13 @@ class _GroupsPageState extends State<GroupsPage> {
     _loadGroups();
   }
 
-  Future<String?> _getAdminToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('admin_token');
-  }
-
   Future<void> _loadGroups() async {
-    final token = await _getAdminToken();
+    final token = await AuthStorage.getAdminToken();
     if (token == null) return;
-    final response = await http.get(
-      apiUri('group_api.php', queryParameters: {'action': 'GET'}),
-      headers: {'Authorization': 'Bearer $token'},
+    final response = await ApiClient.get(
+      'group_api.php',
+      queryParameters: {'action': 'GET'},
+      token: token,
     );
 
     try {
@@ -66,12 +61,12 @@ class _GroupsPageState extends State<GroupsPage> {
     final name = _groupNameController.text.trim();
     if (name.isEmpty) return;
 
-    final token = await _getAdminToken();
+    final token = await AuthStorage.getAdminToken();
     if (token == null) return;
-    final response = await http.post(
-      apiUri('group_api.php'),
-      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
-      body: jsonEncode({'group_name': name}),
+    final response = await ApiClient.postJson(
+      'group_api.php',
+      token: token,
+      body: {'group_name': name},
     );
 
     try {
@@ -92,12 +87,12 @@ class _GroupsPageState extends State<GroupsPage> {
   }
 
   Future<void> _deleteGroup(int groupId) async {
-    final token = await _getAdminToken();
+    final token = await AuthStorage.getAdminToken();
     if (token == null) return;
-    final response = await http.delete(
-      apiUri('group_api.php'),
-      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
-      body: jsonEncode({'group_id': groupId}),
+    final response = await ApiClient.deleteJson(
+      'group_api.php',
+      token: token,
+      body: {'group_id': groupId},
     );
 
     try {
@@ -113,11 +108,12 @@ class _GroupsPageState extends State<GroupsPage> {
   }
 
   Future<void> _loadGroupStudents(int groupId) async {
-    final token = await _getAdminToken();
+    final token = await AuthStorage.getAdminToken();
     if (token == null) return;
-    final response = await http.get(
-      apiUri('group_api.php', queryParameters: {'action': 'students', 'group_id': groupId}),
-      headers: {'Authorization': 'Bearer $token'},
+    final response = await ApiClient.get(
+      'group_api.php',
+      queryParameters: {'action': 'students', 'group_id': groupId},
+      token: token,
     );
 
     try {

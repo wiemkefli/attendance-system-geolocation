@@ -1,9 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:attendancesystem/config/api_config.dart';
 import 'package:attendancesystem/config/app_routes.dart';
+import 'package:attendancesystem/services/api_client.dart';
+import 'package:attendancesystem/services/auth_storage.dart';
 import 'package:attendancesystem/widgets/admin_drawer.dart';
 
 class TeachersPage extends StatefulWidget {
@@ -39,18 +38,10 @@ class _TeachersPageState extends State<TeachersPage> {
     _loadSubjects();
   }
 
-  Future<String?> _getAdminToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('admin_token');
-  }
-
   Future<void> _loadTeachers() async {
-    final token = await _getAdminToken();
+    final token = await AuthStorage.getAdminToken();
     if (token == null) return;
-    final response = await http.get(
-      apiUri('teacher_api.php'),
-      headers: {'Authorization': 'Bearer $token'},
-    );
+    final response = await ApiClient.get('teacher_api.php', token: token);
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -74,12 +65,9 @@ class _TeachersPageState extends State<TeachersPage> {
   }
 
   Future<void> _loadSubjects() async {
-    final token = await _getAdminToken();
+    final token = await AuthStorage.getAdminToken();
     if (token == null) return;
-    final response = await http.get(
-      apiUri('subjects_api.php'),
-      headers: {'Authorization': 'Bearer $token'},
-    );
+    final response = await ApiClient.get('subjects_api.php', token: token);
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       if (!mounted) return;
@@ -112,19 +100,19 @@ class _TeachersPageState extends State<TeachersPage> {
       return;
     }
 
-    final token = await _getAdminToken();
+    final token = await AuthStorage.getAdminToken();
     if (token == null) return;
 
-    final response = await http.post(
-      apiUri('teacher_api.php'),
-      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
-      body: jsonEncode({
+    final response = await ApiClient.postJson(
+      'teacher_api.php',
+      token: token,
+      body: {
         'firstName': _firstNameController.text.trim(),
         'lastName': _lastNameController.text.trim(),
         'email': _emailController.text.trim(),
         'phone': _phoneController.text.trim(),
         'subjectId': _selectedSubjectId,
-      }),
+      },
     );
 
     final result = jsonDecode(response.body);
@@ -151,12 +139,12 @@ class _TeachersPageState extends State<TeachersPage> {
   }
 
   Future<void> _deleteTeacher(int teacherId) async {
-    final token = await _getAdminToken();
+    final token = await AuthStorage.getAdminToken();
     if (token == null) return;
-    final response = await http.delete(
-      apiUri('teacher_api.php'),
-      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
-      body: jsonEncode({'teacher_id': teacherId}),
+    final response = await ApiClient.deleteJson(
+      'teacher_api.php',
+      token: token,
+      body: {'teacher_id': teacherId},
     );
 
     final result = jsonDecode(response.body);

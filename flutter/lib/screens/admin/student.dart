@@ -1,10 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:attendancesystem/config/api_config.dart';
 import 'package:attendancesystem/config/app_routes.dart';
+import 'package:attendancesystem/services/api_client.dart';
+import 'package:attendancesystem/services/auth_storage.dart';
 import 'package:attendancesystem/widgets/admin_drawer.dart';
 
 class StudentsPage extends StatefulWidget {
@@ -37,11 +36,6 @@ class _StudentsPageState extends State<StudentsPage> {
     _loadInitialData();
   }
 
-  Future<String?> _getAdminToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('admin_token');
-  }
-
   String _generateRandomPassword(int length) {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#\$%&*';
     final rand = DateTime.now().millisecondsSinceEpoch;
@@ -49,12 +43,9 @@ class _StudentsPageState extends State<StudentsPage> {
   }
 
   Future<void> _loadInitialData() async {
-    final token = await _getAdminToken();
+    final token = await AuthStorage.getAdminToken();
     if (token == null) return;
-    final response = await http.get(
-      apiUri('student_api.php'),
-      headers: {'Authorization': 'Bearer $token'},
-    );
+    final response = await ApiClient.get('student_api.php', token: token);
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -97,13 +88,13 @@ class _StudentsPageState extends State<StudentsPage> {
 
     if (student.values.any((e) => e == null || e == '')) return;
 
-    final token = await _getAdminToken();
+    final token = await AuthStorage.getAdminToken();
     if (token == null) return;
 
-    final response = await http.post(
-      apiUri('student_api.php'),
-      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
-      body: jsonEncode(student),
+    final response = await ApiClient.postJson(
+      'student_api.php',
+      token: token,
+      body: student,
     );
 
     try {
@@ -149,12 +140,12 @@ class _StudentsPageState extends State<StudentsPage> {
   }
 
   Future<void> _deleteStudent(int id) async {
-    final token = await _getAdminToken();
+    final token = await AuthStorage.getAdminToken();
     if (token == null) return;
-    final response = await http.delete(
-      apiUri('student_api.php'),
-      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
-      body: jsonEncode({'student_id': id}),
+    final response = await ApiClient.deleteJson(
+      'student_api.php',
+      token: token,
+      body: {'student_id': id},
     );
 
     try {
