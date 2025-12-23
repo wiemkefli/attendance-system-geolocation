@@ -6,12 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:attendancesystem/services/api_client.dart';
-
-import 'package:attendancesystem/screens/student/student_main_page.dart';
-import 'package:attendancesystem/screens/student/attendance_history.dart';
-import 'package:attendancesystem/screens/signout.dart';
-import 'package:attendancesystem/screens/student/profile_page.dart';
-
+import 'package:attendancesystem/config/app_routes.dart';
+import 'package:attendancesystem/widgets/student_drawer.dart';
 
 class TimetablePage extends StatefulWidget {
   const TimetablePage({super.key});
@@ -213,29 +209,14 @@ class _TimetablePageState extends State<TimetablePage> {
   }
 
   @override
-Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(
-      title: const Text('Timetable'),
-      backgroundColor: Colors.blueAccent,
-    ),
-    drawer: Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          const DrawerHeader(
-            decoration: BoxDecoration(color: Colors.blueAccent),
-            child: Text('Student Panel', style: TextStyle(color: Colors.white, fontSize: 20)),
-          ),
-          _buildDrawerItem(context, Icons.dashboard, 'Dashboard', const StudentMainPage()),
-          _buildDrawerItem(context, Icons.person, 'Profile', const StudentProfilePage()),
-          _buildDrawerItem(context, Icons.schedule, 'Timetable', const TimetablePage()),
-          _buildDrawerItem(context, Icons.history, 'Attendance History', const AttendanceHistoryPage()),
-          _buildDrawerItem(context, Icons.logout, 'Sign out', const SignOutPage()),
-        ],
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Timetable'),
+        backgroundColor: Colors.blueAccent,
       ),
-    ),
-    body: _isLoading
+      drawer: const StudentDrawer(currentRoute: AppRoutes.studentTimetable),
+      body: _isLoading
         ? const Center(child: CircularProgressIndicator())
         : SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
@@ -377,19 +358,6 @@ Widget build(BuildContext context) {
               ],
             ),
           ),
-  );
-}
-
-
-  Widget _buildDrawerItem(BuildContext context, IconData icon, String title, Widget? page) {
-    return ListTile(
-      leading: Icon(icon, color: Colors.blueAccent),
-      title: Text(title),
-      onTap: () {
-        if (page != null) {
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => page));
-        }
-      },
     );
   }
 }

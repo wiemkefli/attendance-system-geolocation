@@ -2,11 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:attendancesystem/services/api_client.dart';
-
-import 'package:attendancesystem/screens/student/student_main_page.dart';
-import 'package:attendancesystem/screens/student/timetable.dart';
-import 'package:attendancesystem/screens/student/attendance_history.dart';
-import 'package:attendancesystem/screens/signout.dart';
+import 'package:attendancesystem/config/app_routes.dart';
+import 'package:attendancesystem/widgets/student_drawer.dart';
 
 class StudentProfilePage extends StatefulWidget {
   const StudentProfilePage({super.key});
@@ -97,25 +94,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
         title: const Text('Student Profile'),
         backgroundColor: Colors.blueAccent,
       ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(color: Colors.blueAccent),
-              child: Text(
-                'Student Panel',
-                style: TextStyle(color: Colors.white, fontSize: 20),
-              ),
-            ),
-            _buildDrawerItem(context, Icons.dashboard, 'Dashboard', const StudentMainPage()),
-            _buildDrawerItem(context, Icons.person, 'Profile', const StudentProfilePage()),
-            _buildDrawerItem(context, Icons.schedule, 'Timetable', const TimetablePage()),
-            _buildDrawerItem(context, Icons.history, 'Attendance History', const AttendanceHistoryPage()),
-            _buildDrawerItem(context, Icons.logout, 'Sign out', const SignOutPage()),
-          ],
-        ),
-      ),
+      drawer: const StudentDrawer(currentRoute: AppRoutes.studentProfile),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -144,18 +123,6 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildDrawerItem(BuildContext context, IconData icon, String title, Widget? page) {
-    return ListTile(
-      leading: Icon(icon, color: Colors.blueAccent),
-      title: Text(title),
-      onTap: () {
-        if (page != null) {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => page));
-        }
-      },
     );
   }
 

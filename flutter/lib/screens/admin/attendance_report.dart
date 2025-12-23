@@ -7,14 +7,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
-import 'package:attendancesystem/screens/admin/lesson.dart';
-import 'package:attendancesystem/screens/admin/student.dart';
-import 'package:attendancesystem/screens/admin/teacher.dart';
-import 'package:attendancesystem/screens/admin/group.dart';
-import 'package:attendancesystem/screens/signout.dart';
-import 'package:attendancesystem/screens/admin/admin_main_page.dart';
-import 'package:attendancesystem/screens/admin/location.dart';
 import 'package:attendancesystem/config/api_config.dart';
+import 'package:attendancesystem/config/app_routes.dart';
+import 'package:attendancesystem/widgets/admin_drawer.dart';
 
 class AttendanceReportPage extends StatefulWidget {
   const AttendanceReportPage({super.key});
@@ -158,14 +153,6 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
     }
   }
 
-  Widget _buildDrawerItem(BuildContext context, IconData icon, String title, Widget page) {
-    return ListTile(
-      leading: Icon(icon, color: Colors.blueAccent),
-      title: Text(title),
-      onTap: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => page)),
-    );
-  }
-
   Widget _buildSessionTable(Map<String, dynamic> session) {
     final date = session['date'] ?? '';
     final subject = session['subject'] ?? '';
@@ -228,25 +215,7 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
         title: const Text("Group Attendance Report"),
         backgroundColor: Colors.blueAccent,
       ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(color: Colors.blueAccent),
-              child: Text('Admin Panel', style: TextStyle(color: Colors.white, fontSize: 20)),
-            ),
-            _buildDrawerItem(context, Icons.dashboard, 'Dashboard', const AdminMainPage()),
-            _buildDrawerItem(context, Icons.class_, 'Lessons', const LessonsPage()),
-            _buildDrawerItem(context, Icons.group, 'Groups', const GroupsPage()),
-            _buildDrawerItem(context, Icons.people, 'Teachers', const TeachersPage()),
-            _buildDrawerItem(context, Icons.school, 'Students', const StudentsPage()),
-            _buildDrawerItem(context, Icons.location_on, 'Locations', const LocationsPage()),
-            _buildDrawerItem(context, Icons.assignment, 'Attendance Report', const AttendanceReportPage()),
-            _buildDrawerItem(context, Icons.logout, 'Sign out', const SignOutPage()),
-          ],
-        ),
-      ),
+      drawer: const AdminDrawer(currentRoute: AppRoutes.adminAttendanceReport),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(

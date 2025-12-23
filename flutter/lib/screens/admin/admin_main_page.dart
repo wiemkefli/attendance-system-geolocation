@@ -2,14 +2,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:attendancesystem/screens/admin/lesson.dart';
-import 'package:attendancesystem/screens/admin/teacher.dart';
-import 'package:attendancesystem/screens/admin/student.dart';
-import 'package:attendancesystem/screens/signout.dart';
-import 'package:attendancesystem/screens/admin/group.dart';
-import 'package:attendancesystem/screens/admin/attendance_report.dart';
-import 'package:attendancesystem/screens/admin/location.dart';
 import 'package:attendancesystem/config/api_config.dart';
+import 'package:attendancesystem/config/app_routes.dart';
+import 'package:attendancesystem/widgets/admin_drawer.dart';
 
 class AdminMainPage extends StatefulWidget {
   const AdminMainPage({super.key});
@@ -98,25 +93,7 @@ class _AdminMainPageState extends State<AdminMainPage> {
         title: const Text('Admin Dashboard'),
         backgroundColor: Colors.blueAccent,
       ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(color: Colors.blueAccent),
-              child: Text('Admin Panel', style: TextStyle(color: Colors.white, fontSize: 20)),
-            ),
-            _buildDrawerItem(context, Icons.dashboard, 'Dashboard', const AdminMainPage()),
-            _buildDrawerItem(context, Icons.class_, 'Lessons', const LessonsPage()),
-            _buildDrawerItem(context, Icons.group, 'Groups', const GroupsPage()),
-            _buildDrawerItem(context, Icons.people, 'Teachers', const TeachersPage()),
-            _buildDrawerItem(context, Icons.school, 'Students', const StudentsPage()),
-            _buildDrawerItem(context, Icons.location_on, 'Locations', const LocationsPage()),
-            _buildDrawerItem(context, Icons.assignment, 'Attendance Report', const AttendanceReportPage()),
-            _buildDrawerItem(context, Icons.logout, 'Sign out', const SignOutPage()),
-          ],
-        ),
-      ),
+      drawer: const AdminDrawer(currentRoute: AppRoutes.adminHome),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -149,18 +126,6 @@ class _AdminMainPageState extends State<AdminMainPage> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildDrawerItem(BuildContext context, IconData icon, String title, Widget? page) {
-    return ListTile(
-      leading: Icon(icon, color: Colors.blueAccent),
-      title: Text(title),
-      onTap: () {
-        if (page != null) {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => page));
-        }
-      },
     );
   }
 
