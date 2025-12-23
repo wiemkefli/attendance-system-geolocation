@@ -28,46 +28,17 @@ No remaining Low Priority items at the moment (previous LP items have been addre
 ---
 
 ## 4. Dependency & Version Modernization
-
-### DM-001
-- **Problem (what/where):** Flutter lockfile is behind latest allowed versions.
-- **Why it matters:** Bugfix/security updates; fewer toolchain issues on newer Flutter stable.
-- **Proposed fix (exact approach):** Run `flutter pub upgrade` (no major-constraint jumps) and commit `pubspec.lock`.
-- **Files involved (list):** `flutter/pubspec.lock`
-- **Risk level:** Low
-- **Verification steps (how to confirm):** `flutter pub get`, `flutter analyze`, `flutter test`.
-
-### DM-002
-- **Problem (what/where):** Unused Flutter dependency (`dart_jsonwebtoken`) remains in `flutter/pubspec.yaml`.
-- **Why it matters:** Extra transitive deps and slower builds; confusing for maintainers.
-- **Proposed fix (exact approach):** Remove unused dependency after confirming it’s not imported anywhere.
-- **Files involved (list):** `flutter/pubspec.yaml`, `flutter/pubspec.lock`
-- **Risk level:** Low
-- **Verification steps (how to confirm):** App compiles; `flutter analyze` + tests pass.
-
-### DM-003
-- **Problem (what/where):** Backend PHP version target isn’t explicitly documented/validated by Composer.
-- **Why it matters:** Prevents subtle runtime incompatibilities; clearer dev environment expectations.
-- **Proposed fix (exact approach):** Target PHP **8.2+** in `attendance_api/composer.json` and update README prerequisites.
-- **Files involved (list):** `attendance_api/composer.json`, `README.md`
-- **Risk level:** Low/Medium (depending on developer environments)
-- **Verification steps (how to confirm):** `composer validate` passes; API runs under PHP 8.2+.
-
-### DM-004
-- **Problem (what/where):** `firebase/php-jwt` is pinned to v6 (`attendance_api/composer.json`).
-- **Why it matters:** Staying current for security fixes and compatibility.
-- **Proposed fix (exact approach):** Upgrade to v7 and update PHP code if API changes require it.
-- **Files involved (list):** `attendance_api/composer.json`, `attendance_api/composer.lock`, `attendance_api/*.php`
-- **Risk level:** Medium
-- **Verification steps (how to confirm):** Admin/student login returns JWT; protected endpoints accept token; `php -l` and `composer validate`.
-
-### DM-005
-- **Problem (what/where):** Custom `.env` parser (`attendance_api/env.php`) is limited compared to standard parsers.
-- **Why it matters:** Edge cases (quoted values, exported vars, whitespace) and maintainability.
-- **Proposed fix (exact approach):** Add `vlucas/phpdotenv` and load it when available, keeping the custom loader as a fallback.
-- **Files involved (list):** `attendance_api/composer.json`, `attendance_api/env.php`, `attendance_api/composer.lock`
-- **Risk level:** Low
-- **Verification steps (how to confirm):** `.env` values load correctly; DB connects; no behavior change when `.env` is absent.
+- **Flutter/Dart upgrades, package upgrades plan:**
+  - Keep Flutter on stable.
+  - Run `flutter pub upgrade` and commit lockfile updates.
+  - Evaluate major-version jumps via `flutter pub outdated` (do one-by-one with verification).
+- **PHP version target + library updates:**
+  - Target PHP **8.2+**.
+  - Keep third-party libs current (review changelogs before major bumps).
+  - Prefer standard env loading (Dotenv) while keeping local fallback behavior for dev.
+- **MySQL schema/index improvements:**
+  - Add/confirm composite indexes for report queries.
+  - Stop shipping a "drop DB" script as the only migration strategy; introduce repeatable migrations (even a simple numbered SQL migrations folder).
 
 ---
 
