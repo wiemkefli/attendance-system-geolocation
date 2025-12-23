@@ -23,7 +23,13 @@ No remaining Medium Priority items at the moment (previous MP items have been ad
 
 ## 3. Low Priority (Nice-to-have / Polish)
 
-No remaining Low Priority items at the moment (previous LP items have been addressed and removed from this plan).
+### LP-004
+- **Problem (what/where):** Planning/docs files are being edited locally but should not be re-committed.
+- **Why it matters:** Avoids noisy diffs and accidental churn when iterating on notes.
+- **Proposed fix (exact approach):** Add `fixandimprovement.md` and `CHANGELOG.md` to `.gitignore`.
+- **Files involved (list):** `.gitignore`
+- **Risk level:** Low
+- **Verification steps (how to confirm):** `git status` stops showing changes after local edits (note: this only applies to untracked files).
 
 ---
 
