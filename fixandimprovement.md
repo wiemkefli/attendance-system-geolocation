@@ -3,10 +3,9 @@
 ## 0. Quick Summary
 - **What this project is:** A Flutter mobile attendance app with **Admin** and **Student** panels backed by a **vanilla PHP + MySQL** API. Students authenticate via **JWT**, can mark attendance using **geo-distance**, view timetable/history, and receive **background notifications** (WorkManager) if a class is about to start and they are far away.
 - **Major remaining issues found:**
-  - **Maintainability:** Some Flutter screens still do "screen-by-screen HTTP" with duplicated token/error handling.
-  - **Hygiene:** No CI, minimal tests, and no migration strategy beyond a "drop + recreate" SQL file.
+  - **Hygiene:** `attendance_api/composer.json` fails `composer validate` strict checks (missing package metadata); no CI, minimal tests, and no migration strategy beyond a "drop + recreate" SQL file.
 - **Biggest remaining wins:**
-  - Finish migrating remaining Flutter screens to the shared API layer, with consistent auth + error handling.
+  - Make backend composer config CI-friendly.
   - Add CI + expand tests + introduce a migration strategy for DB changes.
 
 ---
@@ -19,18 +18,15 @@ No remaining High Priority items at the moment (previous HP items have been addr
 
 ## 2. Medium Priority (Maintainability / Architecture)
 
-### MP-009
-- **Problem (what/where):** Flutter still has a lot of direct HTTP + dynamic map parsing across screens (inconsistent error handling and duplicated logic).
-- **Why it matters:** Changes to endpoints/auth/error handling remain costly and bug-prone.
+### MP-010
+- **Problem (what/where):** `attendance_api/composer.json` fails `composer validate` strict checks (missing `name` / `description` / `license`).
+- **Why it matters:** Blocks adding a clean CI job for the PHP backend and makes local setup noisier.
 - **Proposed fix (exact approach):**
-  - Continue migrating screens to a shared API layer (`ApiClient`) and reduce duplication by introducing:
-    - A small `AuthStorage` helper for reading/writing tokens and user type.
-    - `ApiClient` JSON helpers to standardize decoding and error reporting.
-    - Typed models incrementally where it reduces parsing complexity (start with dashboard/report/history payloads).
-- **Files involved (list):** `flutter/lib/screens/**`, `flutter/lib/services/**`
-- **Risk level:** Medium
+  - Add `name`, `description`, `type`, and `license` fields (keep it a `project`, not a publishable library).
+- **Files involved (list):** `attendance_api/composer.json`
+- **Risk level:** Low
 - **Verification steps (how to confirm):**
-  - `flutter analyze` passes; fewer duplicated http blocks; consistent error UI.
+  - Run `composer validate` inside `attendance_api/` and confirm it exits successfully.
 
 ---
 
@@ -95,7 +91,7 @@ No remaining High Priority items at the moment (previous HP items have been addr
 ---
 
 ## 7. Implementation Order
-1. **MP-009** Continue API layer + models migration incrementally.
+1. **MP-010** Fix composer metadata for CI.
 2. **Dependency modernization** Upgrade deps safely and re-run checks.
 3. **Tests/CI** Expand tests and add GitHub Actions.
 4. **LP items** Theme polish + text cleanup.
