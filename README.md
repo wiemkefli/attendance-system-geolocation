@@ -128,7 +128,7 @@ Base URL examples:
 - Student auth uses JWT with `Authorization: Bearer <token>`
 - Admin login returns a JWT in `token`; admin endpoints require `Authorization: Bearer <token>` when `ADMIN_AUTH_REQUIRED` is enabled (recommended).
 
-The JWT secret can be configured via `attendance_api/.env` using `JWT_SECRET`. If not set, the API falls back to the legacy default `your_super_secret_key` (dev only).
+The JWT secret can be configured via `attendance_api/.env` using `JWT_SECRET` (HS256 requires a 32+ character secret).
 
 ### Endpoints (as implemented)
 
@@ -211,6 +211,7 @@ Behavior summary:
 
 - **Android emulator vs device networking**: `10.0.2.2` works only on the Android emulator. For a physical device, use your machine's LAN IP (example: `http://192.168.1.10:8000`) and ensure the device can reach it.
 - **Backend env config**: Create `attendance_api/.env` from `attendance_api/.env.example` (set `DB_PASS` and a strong `JWT_SECRET`), especially if your MySQL password is not the legacy default.
+- **JWT secret length**: `JWT_SECRET` must be **32+ characters** for HS256 (required by `firebase/php-jwt` v7).
 - **Admin API auth**: Admin endpoints require `Authorization: Bearer <admin_token>` when `ADMIN_AUTH_REQUIRED=true` (the app stores this as `admin_token` after admin login).
 - **Composer install location**: PHP dependencies are expected at `attendance_api/vendor/`; run `composer install` inside `attendance_api/` (not the repo root).
 

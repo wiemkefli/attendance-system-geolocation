@@ -1,6 +1,7 @@
 <?php
 require 'vendor/autoload.php';
 require 'db.php'; // ✅ use shared PDO connection
+require_once __DIR__ . '/jwt_secret.php';
 
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
@@ -9,7 +10,7 @@ header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: Authorization");
 header("Content-Type: application/json");
 
-$secret_key = getenv('JWT_SECRET') ?: 'your_super_secret_key';
+$secret_key = getJwtSecretKey();
 
 // ✅ Token handling
 $headers = getallheaders();

@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/env.php';
 loadEnvFile(__DIR__ . '/.env');
+require_once __DIR__ . '/jwt_secret.php';
 
 require_once __DIR__ . '/vendor/autoload.php';
 
@@ -19,7 +20,7 @@ function requireStudentAuth(): array
     }
 
     $token = str_replace('Bearer ', '', $authHeader);
-    $secret_key = getenv('JWT_SECRET') ?: 'your_super_secret_key';
+    $secret_key = getJwtSecretKey();
 
     try {
         $decoded = JWT::decode($token, new Key($secret_key, 'HS256'));
@@ -44,4 +45,3 @@ function requireStudentAuth(): array
         'token' => $token,
     ];
 }
-

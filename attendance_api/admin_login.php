@@ -1,6 +1,7 @@
 <?php
 require 'vendor/autoload.php';
 require 'db.php'; // ✅ shared PDO connection
+require_once __DIR__ . '/jwt_secret.php';
 
 use Firebase\JWT\JWT;
 
@@ -21,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($admin) {
             $storedPassword = $admin['password'] ?? '';
             $passwordInfo = password_get_info($storedPassword);
-            $secret_key = getenv('JWT_SECRET') ?: 'your_super_secret_key';
+            $secret_key = getJwtSecretKey();
 
             $issueToken = function () use ($admin, $secret_key) {
                 $payload = [
