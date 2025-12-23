@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:attendancesystem/services/background_task.dart' as bg_task;
 import 'package:attendancesystem/services/api_client.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -97,21 +98,29 @@ class LoginPageState extends State<LoginPage> {
           await prefs.setString('token', data['token']);
           await prefs.setInt('group_id', data['group_id']);
 
-          await Workmanager().cancelAll();
-          await Workmanager().registerOneOffTask(
-            'geo_reminder_task_once',
-            bg_task.taskName,
-            initialDelay: const Duration(seconds: 30),
-            constraints: Constraints(networkType: NetworkType.connected),
-          );
+          final notificationStatus = await Permission.notification.request();
+          if (notificationStatus.isGranted) {
+            await Workmanager().cancelAll();
+            await Workmanager().registerOneOffTask(
+              'geo_reminder_task_once',
+              bg_task.taskName,
+              initialDelay: const Duration(seconds: 30),
+              constraints: Constraints(networkType: NetworkType.connected),
+            );
 
-          await Workmanager().registerPeriodicTask(
-            'geo_reminder_task_periodic',
-            bg_task.taskName,
-            frequency: const Duration(minutes: 15),
-            initialDelay: const Duration(seconds: 30),
-            constraints: Constraints(networkType: NetworkType.connected),
-          );
+            await Workmanager().registerPeriodicTask(
+              'geo_reminder_task_periodic',
+              bg_task.taskName,
+              frequency: const Duration(minutes: 15),
+              initialDelay: const Duration(seconds: 30),
+              constraints: Constraints(networkType: NetworkType.connected),
+            );
+          } else {
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Notifications disabled: background reminders will not run.')),
+            );
+          }
 
           if (!mounted) return;
           Navigator.pushNamed(context, '/student');

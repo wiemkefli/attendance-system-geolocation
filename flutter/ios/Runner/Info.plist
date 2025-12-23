@@ -45,5 +45,11 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>We use your location to verify attendance and show distance to class locations.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>We use your location for attendance reminders when a class is about to start.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>We use your location for attendance reminders when a class is about to start.</string>
 </dict>
 </plist>
