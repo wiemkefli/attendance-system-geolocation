@@ -227,6 +227,8 @@ Behavior summary:
 - `HP-004` / `HP-005`: Attendance marking is guarded against `present → absent` overwrites and validated against group/date/time rules.
 - `HP-006`: `get_subjects_by_group.php` now returns a simple subject name list for the admin report filter.
 - `MP-001` / `MP-003` / `MP-008`: Added a small Flutter `ApiClient`, disposed controllers, and fixed the default widget test to match the real UI.
+- `MP-009`: Migrated remaining Flutter screens off direct `http` calls, centralized token handling in `flutter/lib/services/auth_storage.dart`, and introduced a typed `StudentDashboard` model.
+- `MP-010`: Updated `attendance_api/composer.json` metadata so `composer validate` passes cleanly (CI-friendly); lock/vendor metadata refreshed.
 
 ## License
 

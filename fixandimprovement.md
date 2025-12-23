@@ -3,9 +3,8 @@
 ## 0. Quick Summary
 - **What this project is:** A Flutter mobile attendance app with **Admin** and **Student** panels backed by a **vanilla PHP + MySQL** API. Students authenticate via **JWT**, can mark attendance using **geo-distance**, view timetable/history, and receive **background notifications** (WorkManager) if a class is about to start and they are far away.
 - **Major remaining issues found:**
-  - **Hygiene:** `attendance_api/composer.json` fails `composer validate` strict checks (missing package metadata); no CI, minimal tests, and no migration strategy beyond a "drop + recreate" SQL file.
+  - **Hygiene:** No CI, minimal tests, and no migration strategy beyond a "drop + recreate" SQL file.
 - **Biggest remaining wins:**
-  - Make backend composer config CI-friendly.
   - Add CI + expand tests + introduce a migration strategy for DB changes.
 
 ---
@@ -18,15 +17,7 @@ No remaining High Priority items at the moment (previous HP items have been addr
 
 ## 2. Medium Priority (Maintainability / Architecture)
 
-### MP-010
-- **Problem (what/where):** `attendance_api/composer.json` fails `composer validate` strict checks (missing `name` / `description` / `license`).
-- **Why it matters:** Blocks adding a clean CI job for the PHP backend and makes local setup noisier.
-- **Proposed fix (exact approach):**
-  - Add `name`, `description`, `type`, and `license` fields (keep it a `project`, not a publishable library).
-- **Files involved (list):** `attendance_api/composer.json`
-- **Risk level:** Low
-- **Verification steps (how to confirm):**
-  - Run `composer validate` inside `attendance_api/` and confirm it exits successfully.
+No remaining Medium Priority items at the moment (previous MP items have been addressed and removed from this plan).
 
 ---
 
@@ -91,7 +82,6 @@ No remaining High Priority items at the moment (previous HP items have been addr
 ---
 
 ## 7. Implementation Order
-1. **MP-010** Fix composer metadata for CI.
-2. **Dependency modernization** Upgrade deps safely and re-run checks.
-3. **Tests/CI** Expand tests and add GitHub Actions.
-4. **LP items** Theme polish + text cleanup.
+1. **Dependency modernization** Upgrade deps safely and re-run checks.
+2. **Tests/CI** Expand tests and add GitHub Actions.
+3. **LP items** Theme polish + text cleanup.
