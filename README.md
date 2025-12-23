@@ -128,13 +128,13 @@ Base URL examples:
 - Student auth uses JWT with `Authorization: Bearer <token>`
 - Admin login returns a JWT in `token`; admin endpoints require `Authorization: Bearer <token>` when `ADMIN_AUTH_REQUIRED` is enabled (recommended).
 
-⚠️ The JWT secret can be configured via `attendance_api/.env` using `JWT_SECRET`. If not set, the API falls back to the legacy default `your_super_secret_key` (dev only).
+The JWT secret can be configured via `attendance_api/.env` using `JWT_SECRET`. If not set, the API falls back to the legacy default `your_super_secret_key` (dev only).
 
 ### Endpoints (as implemented)
 
 **Auth**
-- `POST /admin_login.php` — JSON: `{ "username": "...", "password": "..." }`
-- `POST /student_login.php` — JSON: `{ "email": "...", "password": "..." }` → returns `token`, `group_id`
+- `POST /admin_login.php` - JSON: `{ "username": "...", "password": "..." }`
+- `POST /student_login.php` - JSON: `{ "email": "...", "password": "..." }` returns `token`, `group_id`
 
 **Admin dashboard**
 - `POST /admin_dashboard.php` — (optional) form field `date=YYYY-MM-DD` (defaults to today)
@@ -170,9 +170,10 @@ Base URL examples:
 - `POST /lessons_api.php` — delete lesson: `{ "action": "delete", "lesson_id": 1 }`
 
 **Student (JWT-protected)**
-- `POST /student_dashboard.php` — JSON: `{ "date": "YYYY-MM-DD" }`
+- `POST /student_dashboard.php` - JSON: `{ "date": "YYYY-MM-DD" }`
 - `GET /student_profile.php`
-- `POST /change_password.php` — JSON: `{ "new_password": "..." }`
+- `GET /student_timetable.php?date=YYYY-MM-DD`
+- `POST /change_password.php` - JSON: `{ "new_password": "..." }`
 - `GET /get_attendance_history.php`
 - `GET /get_attendance_status.php?lesson_id=<id>&date=YYYY-MM-DD`
 - `POST /mark_attendance.php` — JSON: `{ "lesson_id": 1, "attendance_date": "YYYY-MM-DD", "status": "present|absent", "latitude": 0.0, "longitude": 0.0 }`
@@ -203,8 +204,8 @@ On student login, the app registers:
 Implementation: `flutter/lib/services/background_task.dart`
 
 Behavior summary:
-- Fetches today’s lessons
-- If the next class starts within 15 minutes and distance > 100m → triggers a local notification
+ - Fetches today's lessons
+ - If the next class starts within 15 minutes and distance > 100m, triggers a local notification
 
 ## Common Gotchas
 
@@ -212,7 +213,6 @@ Behavior summary:
 - **Backend env config**: Create `attendance_api/.env` from `attendance_api/.env.example` (set `DB_PASS` and a strong `JWT_SECRET`), especially if your MySQL password is not the legacy default.
 - **Admin API auth**: Admin endpoints require `Authorization: Bearer <admin_token>` when `ADMIN_AUTH_REQUIRED=true` (the app stores this as `admin_token` after admin login).
 - **Composer install location**: PHP dependencies are expected at `attendance_api/vendor/`; run `composer install` inside `attendance_api/` (not the repo root).
-- **`export_attendance_pdf.php`**: references `tcpdf/tcpdf.php`, but `attendance_api/tcpdf/` is not present in this repo; the Flutter app exports PDFs client-side instead.
 
 ## Development Notes
 
